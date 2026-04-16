@@ -53,7 +53,7 @@ const PredictiveHeatMap = ({ baselines = {}, eventHour = 19, rawHistory = [] }) 
   };
 
   const getColor = (val) => {
-    if (val < 10) return 'bg-black/40';
+    if (val < 10) return 'bg-slate-400/20';
     if (val < 30) return 'bg-orange-900/30';
     if (val < 50) return 'bg-orange-600/50';
     if (val < 80) return 'bg-orange-500/80';
@@ -157,7 +157,7 @@ const PredictiveHeatMap = ({ baselines = {}, eventHour = 19, rawHistory = [] }) 
 
         {/* Color Key Legend */}
         <div className="flex items-center justify-between pt-2 px-1 border-t border-gray-50">
-          <div className="flex items-center space-x-1"><div className="w-2 h-2 rounded-sm bg-black/40"></div><span className="text-[8px] text-slate-400 dark:text-slate-500">0-10%</span></div>
+          <div className="flex items-center space-x-1"><div className="w-2 h-2 rounded-sm bg-slate-400/20"></div><span className="text-[8px] text-slate-400 dark:text-slate-500">0-10%</span></div>
           <div className="flex items-center space-x-1"><div className="w-2 h-2 rounded-sm bg-orange-200"></div><span className="text-[8px] text-gray-400">10-30%</span></div>
           <div className="flex items-center space-x-1"><div className="w-2 h-2 rounded-sm bg-orange-400"></div><span className="text-[8px] text-gray-400">30-50%</span></div>
           <div className="flex items-center space-x-1"><div className="w-2 h-2 rounded-sm bg-orange-600"></div><span className="text-[8px] text-gray-400">50-80%</span></div>
