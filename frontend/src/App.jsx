@@ -53,24 +53,25 @@ const PredictiveHeatMap = ({ baselines = {}, eventHour = 19, rawHistory = [] }) 
   };
 
   const getColor = (val) => {
-    if (val < 10) return 'bg-slate-200';
-    if (val < 30) return 'bg-orange-200';
-    if (val < 50) return 'bg-orange-400';
-    if (val < 80) return 'bg-orange-600';
-    return 'bg-red-600';                      // Warning peak
+    if (val < 10) return 'bg-slate-200/50 dark:bg-slate-800/40';
+    if (val < 30) return 'bg-orange-900/30';
+    if (val < 50) return 'bg-orange-600/50';
+    if (val < 80) return 'bg-orange-500/80';
+    return 'bg-red-500';                      // Warning peak
   };
 
   return (
-    <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 space-y-6 relative">
+    <div className="bg-white/5 backdrop-blur-xl p-8 rounded-[2.5rem] shadow-2xl border border-white/10 space-y-8 relative overflow-hidden">
+      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-orange-500/50 to-transparent" />
       <div className="flex justify-between items-end">
         <div>
-          <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Predictive Heat Map</h3>
-          <p className="text-sm font-bold text-gray-700">Daily Demand Forecast</p>
+          <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mb-1">Predictive Engine</h3>
+          <p className="text-lg font-black text-white tracking-tight">Demand Forecast</p>
         </div>
         <select 
           value={selectedDay}
           onChange={(e) => setSelectedDay(e.target.value)}
-          className="bg-white border border-gray-200 text-[10px] font-bold rounded-lg px-2 py-1 outline-none focus:ring-2 focus:ring-orange-500"
+          className="bg-white/5 border border-white/10 text-white text-[10px] font-bold rounded-xl px-3 py-1.5 outline-none focus:ring-2 focus:ring-orange-500/50 transition-all cursor-pointer"
         >
           <option value="Monday">Monday</option>
           <option value="Tuesday">Tuesday</option>
@@ -80,12 +81,12 @@ const PredictiveHeatMap = ({ baselines = {}, eventHour = 19, rawHistory = [] }) 
           <option value="Saturday">Saturday</option>
           <option value="Sunday">Sunday</option>
         </select>
-        <div className="flex bg-gray-100 p-1 rounded-xl space-x-1">
+        <div className="flex bg-black/40 p-1 rounded-xl border border-white/5">
           {['Sunny', 'Rainy'].map((w) => (
             <button
               key={w}
               onClick={() => setWeather(w)}
-              className={`px-3 py-1 text-[10px] font-bold rounded-lg transition-all ${weather === w ? 'bg-white text-orange-600 shadow-sm' : 'text-gray-400'}`}
+              className={`px-4 py-1.5 text-[10px] font-bold rounded-lg transition-all duration-300 ${weather === w ? 'bg-white/10 text-orange-400 shadow-lg ring-1 ring-white/10' : 'text-slate-500 hover:text-slate-300'}`}
             >
               {w}
             </button>
@@ -97,8 +98,8 @@ const PredictiveHeatMap = ({ baselines = {}, eventHour = 19, rawHistory = [] }) 
         {['Dining Room', 'Patio'].map((zone) => (
           <div key={zone}>
             <div className="flex justify-between items-center mb-2">
-              <span className="text-[9px] font-black uppercase text-gray-400">{zone}</span>
-              <span className="text-[9px] text-gray-300">24H Timeline</span>
+              <span className="text-[9px] font-black uppercase text-slate-400 tracking-widest">{zone}</span>
+              <span className="text-[9px] text-slate-600">24H Dynamics</span>
             </div>
             <div className="grid grid-cols-24 gap-1 h-8" onMouseLeave={() => setActiveCell(null)}>
               {hours.map((h) => {
@@ -111,7 +112,7 @@ const PredictiveHeatMap = ({ baselines = {}, eventHour = 19, rawHistory = [] }) 
                     key={h}
                     onMouseEnter={(e) => setActiveCell({ hour: h, zone, val, displayHour })}
                     onClick={() => setActiveCell({ hour: h, zone, val, displayHour })}
-                    className={`h-full rounded-sm border border-white/40 transition-all duration-300 cursor-crosshair ${getColor(val)} ${isHovered ? 'ring-2 ring-black ring-inset scale-110 z-10' : ''}`}
+                    className={`h-full rounded-[3px] border border-white/5 transition-all duration-500 cursor-crosshair ${getColor(val)} ${isHovered ? 'ring-2 ring-white/50 scale-110 z-10 shadow-xl' : ''}`}
                   />
                 );
               })}
@@ -121,7 +122,7 @@ const PredictiveHeatMap = ({ baselines = {}, eventHour = 19, rawHistory = [] }) 
 
         {/* Custom Rich Tooltip */}
         {activeCell && (
-          <div className="absolute z-50 -top-12 left-0 right-0 mx-auto w-48 bg-gray-900 text-white p-3 rounded-2xl shadow-xl pointer-events-none animate-in fade-in zoom-in duration-200">
+          <div className="absolute z-50 -top-16 left-0 right-0 mx-auto w-52 bg-slate-900/90 backdrop-blur-2xl text-white p-4 rounded-3xl border border-white/20 shadow-2xl pointer-events-none animate-in fade-in zoom-in slide-in-from-bottom-2 duration-300">
             <div className="flex justify-between items-start mb-2">
               <div>
                 <p className="text-[10px] font-bold text-gray-400 uppercase">{activeCell.displayHour} • {activeCell.zone}</p>
@@ -147,11 +148,11 @@ const PredictiveHeatMap = ({ baselines = {}, eventHour = 19, rawHistory = [] }) 
         )}
 
         <div className="flex justify-between px-1">
-          <span className="text-[8px] text-gray-300">12am</span>
-          <span className="text-[8px] text-gray-300">6am</span>
-          <span className="text-[8px] text-gray-300">12pm</span>
-          <span className="text-[8px] text-gray-300">6pm</span>
-          <span className="text-[8px] text-gray-300">11pm</span>
+          <span className="text-[8px] text-slate-600 font-bold">12AM</span>
+          <span className="text-[8px] text-slate-600 font-bold">06AM</span>
+          <span className="text-[8px] text-slate-600 font-bold">12PM</span>
+          <span className="text-[8px] text-slate-600 font-bold">06PM</span>
+          <span className="text-[8px] text-slate-600 font-bold">11PM</span>
         </div>
 
         {/* Color Key Legend */}
@@ -164,9 +165,9 @@ const PredictiveHeatMap = ({ baselines = {}, eventHour = 19, rawHistory = [] }) 
         </div>
       </div>
 
-      <div className="pt-4 border-t border-gray-50 flex items-center justify-between">
-        <label className="text-[10px] font-bold text-gray-400 uppercase">
-          Local Event Impact: {eventLevel === 0 ? 'None' : `Lvl ${eventLevel}`}
+      <div className="pt-6 border-t border-white/5 flex items-center justify-between">
+        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">
+          Event Intensity: <span className="text-orange-400 ml-1">{eventLevel === 0 ? 'Baseline' : `Level ${eventLevel}`}</span>
         </label>
         <input 
           type="range" min="0" max="5" value={eventLevel} 
@@ -175,11 +176,11 @@ const PredictiveHeatMap = ({ baselines = {}, eventHour = 19, rawHistory = [] }) 
         />
       </div>
 
-      <div className={`mt-4 p-3 rounded-xl text-[11px] font-bold border ${peak > 80 ? 'bg-red-50 border-red-100 text-red-700' : 'bg-green-50 border-green-100 text-green-700'}`}>
-        <span className="uppercase tracking-widest block mb-1">Manager's Action:</span>
+      <div className={`mt-6 p-4 rounded-2xl text-[11px] font-medium border backdrop-blur-md transition-colors duration-500 ${peak > 80 ? 'bg-red-500/10 border-red-500/20 text-red-200' : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-200'}`}>
+        <span className="uppercase tracking-[0.2em] font-black block mb-2 opacity-50">Maestro's Directive</span>
         {peak > 80 
-          ? "⚠️ High volume predicted. Schedule a floor lead and ensure the kitchen is prepped by 5pm." 
-          : "✅ Standard volume. Great time for deep cleaning or staff training during gray blocks."}
+          ? "Critical volume anticipated. Deploy senior floor lead; initiate kitchen prep sequence by 17:00." 
+          : "Flow stabilized. Optimal window for deep-sanitization protocols or specialized staff workshops."}
       </div>
     </div>
   );
@@ -286,19 +287,19 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 pb-20">
+    <div className="min-h-screen bg-[#050505] text-slate-200 p-6 pb-24 font-sans selection:bg-orange-500/30">
       <div className="max-w-md mx-auto space-y-4">
         <header className="py-6 px-6 flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-extrabold text-orange-600 tracking-tight">My Restaurant Dashboard</h1>
-            <p className="text-gray-500 text-sm font-medium">CSV Data Source</p>
+            <h1 className="text-3xl font-black text-white tracking-tighter italic">THE VAULT</h1>
+            <p className="text-orange-500/80 text-[10px] font-bold uppercase tracking-[0.3em]">Operational Intelligence</p>
           </div>
           <button 
             onClick={fetchData}
             disabled={loading}
-            className="p-2 bg-white hover:bg-gray-50 rounded-full shadow-sm border border-gray-200 active:scale-95 transition-all group"
+            className="p-3 bg-white/5 hover:bg-white/10 rounded-2xl shadow-xl border border-white/10 active:scale-95 transition-all group backdrop-blur-md"
           >
-            <svg className={`w-5 h-5 text-gray-500 group-hover:text-orange-600 ${loading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className={`w-5 h-5 text-slate-400 group-hover:text-orange-400 ${loading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
             </svg>
           </button>
@@ -317,11 +318,11 @@ function App() {
 
             {/* Trend Chart */}
             {chartData.length > 0 && (
-              <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
-              <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4">Net Sales Trend</h3>
+              <div className="bg-white/5 backdrop-blur-xl p-8 rounded-[2.5rem] shadow-2xl border border-white/10">
+              <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mb-6">Velocity Metrics</h3>
               <div className="h-48 w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={chartData}>
+                <ResponsiveContainer width="100%" height="100%" className="filter drop-shadow-lg">
+                  <AreaChart data={chartData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
                     <defs>
                       <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor="#ea580c" stopOpacity={0.1}/>
@@ -332,7 +333,7 @@ function App() {
                         <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#ffffff08" />
                     <XAxis dataKey="date" hide={true} />
                     <YAxis yAxisId="left" hide={true} />
                     <YAxis yAxisId="right" orientation="right" hide={true} domain={[0, 100]} />
@@ -379,7 +380,11 @@ function App() {
                     />
                     <Tooltip 
                       formatter={(value, name) => name === 'Labor %' ? `${parseFloat(value).toFixed(1)}%` : formatCurrency(value)}
-                      contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }} 
+                      contentStyle={{ 
+                        backgroundColor: '#0f172a', 
+                        borderRadius: '20px', 
+                        border: '1px solid rgba(255,255,255,0.1)', 
+                        boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)' }} 
                     />
                   </AreaChart>
                 </ResponsiveContainer>
@@ -394,10 +399,10 @@ function App() {
         )}
 
         {/* Bottom Status Bar */}
-        <footer className="mt-12 pt-6 border-t border-gray-200">
+        <footer className="mt-12 pt-8 border-t border-white/5">
           <div className="flex items-center space-x-2">
             <div className={`w-2 h-2 rounded-full ${status.toLowerCase().includes('running') ? 'bg-green-500' : 'bg-amber-500'}`}></div>
-            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+            <span className="text-[10px] font-bold text-slate-600 uppercase tracking-[0.4em]">
               System Status: {status}
             </span>
           </div>
