@@ -17,14 +17,14 @@ const SalesOverview = ({ summary }) => {
   return (
     <div className="grid gap-6">
       <div className="grid grid-cols-2 gap-6">
-        <div className="bg-white/70 dark:bg-white/5 backdrop-blur-xl p-8 rounded-[2.5rem] shadow-2xl border border-slate-200 dark:border-white/10 transition-all hover:scale-[1.02] group">
+        <div className="bg-white dark:bg-white/5 backdrop-blur-xl p-8 rounded-[2.5rem] shadow-2xl border border-slate-200 dark:border-white/10 transition-all duration-500 hover:scale-[1.02] group">
           <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">Net Sales</p>
           <p className="text-2xl font-black text-slate-900 dark:text-white mt-1 tracking-tight">{formatCurrency(summary.total_sales)}</p>
           <div className="mt-2 flex items-center text-[10px] font-bold text-emerald-400/80">
             <span className="bg-emerald-500/10 dark:bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 text-emerald-600 dark:text-emerald-400">↑ 12% LW</span>
           </div>
         </div>
-        <div className="bg-white/70 dark:bg-white/5 backdrop-blur-xl p-8 rounded-[2.5rem] shadow-2xl border border-slate-200 dark:border-white/10 transition-all hover:scale-[1.02] group">
+        <div className="bg-white dark:bg-white/5 backdrop-blur-xl p-8 rounded-[2.5rem] shadow-2xl border border-slate-200 dark:border-white/10 transition-all duration-500 hover:scale-[1.02] group">
           <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">Avg Order</p>
           <p className="text-2xl font-black text-slate-900 dark:text-white mt-1 tracking-tight">{formatCurrency(avgOrderValue)}</p>
           <div className="mt-2 flex items-center text-[10px] font-bold text-slate-400 dark:text-slate-500">
@@ -33,14 +33,14 @@ const SalesOverview = ({ summary }) => {
         </div>
       </div>
 
-      <div className="bg-white/70 dark:bg-white/5 backdrop-blur-xl p-8 rounded-[2.5rem] shadow-2xl border border-slate-200 dark:border-white/10 flex justify-between items-center transition-all hover:scale-[1.01]">
+      <div className="bg-white dark:bg-white/5 backdrop-blur-xl p-8 rounded-[2.5rem] shadow-2xl border border-slate-200 dark:border-white/10 flex justify-between items-center transition-all duration-500 hover:scale-[1.01]">
         <div>
           <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">Labor Cost</p>
           <p className="text-2xl font-black text-slate-900 dark:text-white mt-1 tracking-tight">{formatCurrency(summary.total_labor)}</p>
         </div>
         <div className="text-right">
           <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">Labor %</p>
-          <p className={`text-2xl font-black mt-1 tracking-tight ${laborPercentage > 30 ? 'text-red-600 dark:text-red-400' : 'text-orange-600 dark:text-orange-400'}`}>
+          <p className={`text-2xl font-black mt-1 tracking-tight ${laborPercentage > 30 ? 'text-red-600 dark:text-red-500' : 'text-orange-600 dark:text-orange-500'}`}>
             {laborPercentage.toFixed(1)}%
           </p>
           {laborPercentage > 30 && <p className="text-[10px] text-red-600 dark:text-red-500/80 font-black animate-pulse tracking-tighter">CRITICAL EXPOSURE</p>}

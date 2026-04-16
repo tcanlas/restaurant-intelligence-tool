@@ -53,15 +53,15 @@ const PredictiveHeatMap = ({ baselines = {}, eventHour = 19, rawHistory = [] }) 
   };
 
   const getColor = (val) => {
-    if (val < 10) return 'bg-slate-400/20';
-    if (val < 30) return 'bg-orange-900/30';
-    if (val < 50) return 'bg-orange-600/50';
-    if (val < 80) return 'bg-orange-500/80';
-    return 'bg-red-500';                      // Warning peak
+    if (val < 10) return 'bg-slate-100 dark:bg-black';
+    if (val < 30) return 'bg-orange-100 dark:bg-orange-900/40';
+    if (val < 50) return 'bg-orange-300 dark:bg-orange-600/60';
+    if (val < 80) return 'bg-orange-500 dark:bg-orange-500/90';
+    return 'bg-red-500 dark:bg-red-600';
   };
 
   return (
-    <div className="bg-white/70 dark:bg-white/5 backdrop-blur-xl p-8 rounded-[2.5rem] shadow-2xl border border-slate-200 dark:border-white/10 space-y-8 relative overflow-hidden transition-colors duration-500">
+    <div className="bg-white dark:bg-white/5 backdrop-blur-xl p-8 rounded-[2.5rem] shadow-2xl border border-slate-200 dark:border-white/10 space-y-8 relative overflow-hidden transition-all duration-500">
       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-orange-500/50 to-transparent" />
       <div className="flex justify-between items-end">
         <div>
@@ -112,7 +112,7 @@ const PredictiveHeatMap = ({ baselines = {}, eventHour = 19, rawHistory = [] }) 
                     key={h}
                     onMouseEnter={(e) => setActiveCell({ hour: h, zone, val, displayHour })}
                     onClick={() => setActiveCell({ hour: h, zone, val, displayHour })}
-                    className={`h-full rounded-[3px] border border-black/5 dark:border-white/5 transition-all duration-500 cursor-crosshair ${getColor(val)} ${isHovered ? 'ring-2 ring-orange-500/50 dark:ring-white/50 scale-110 z-10 shadow-xl' : ''}`}
+                    className={`h-full rounded-[3px] border border-black/5 dark:border-white/5 transition-all duration-700 cursor-crosshair ${getColor(val)} ${isHovered ? 'ring-2 ring-orange-500 dark:ring-white/50 scale-110 z-10 shadow-xl' : ''}`}
                   />
                 );
               })}
@@ -125,8 +125,8 @@ const PredictiveHeatMap = ({ baselines = {}, eventHour = 19, rawHistory = [] }) 
           <div className="absolute z-50 -top-16 left-0 right-0 mx-auto w-52 bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl text-slate-900 dark:text-white p-4 rounded-3xl border border-slate-200 dark:border-white/20 shadow-2xl pointer-events-none animate-in fade-in zoom-in slide-in-from-bottom-2 duration-300">
             <div className="flex justify-between items-start mb-2">
               <div>
-                <p className="text-[10px] font-bold text-gray-400 uppercase">{activeCell.displayHour} • {activeCell.zone}</p>
-                <p className="text-xl font-black text-orange-400">{activeCell.val.toFixed(0)}% <span className="text-[10px] text-gray-400 font-normal">capacity</span></p>
+                <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase">{activeCell.displayHour} • {activeCell.zone}</p>
+                <p className="text-xl font-black text-orange-600 dark:text-orange-400">{activeCell.val.toFixed(0)}% <span className="text-[10px] text-slate-400 font-normal">capacity</span></p>
               </div>
             </div>
             
@@ -156,12 +156,12 @@ const PredictiveHeatMap = ({ baselines = {}, eventHour = 19, rawHistory = [] }) 
         </div>
 
         {/* Color Key Legend */}
-        <div className="flex items-center justify-between pt-2 px-1 border-t border-gray-50">
-          <div className="flex items-center space-x-1"><div className="w-2 h-2 rounded-sm bg-slate-400/20"></div><span className="text-[8px] text-slate-400 dark:text-slate-500">0-10%</span></div>
-          <div className="flex items-center space-x-1"><div className="w-2 h-2 rounded-sm bg-orange-200"></div><span className="text-[8px] text-gray-400">10-30%</span></div>
-          <div className="flex items-center space-x-1"><div className="w-2 h-2 rounded-sm bg-orange-400"></div><span className="text-[8px] text-gray-400">30-50%</span></div>
-          <div className="flex items-center space-x-1"><div className="w-2 h-2 rounded-sm bg-orange-600"></div><span className="text-[8px] text-gray-400">50-80%</span></div>
-          <div className="flex items-center space-x-1"><div className="w-2 h-2 rounded-sm bg-red-600"></div><span className="text-[8px] text-gray-400">80%+</span></div>
+        <div className="flex items-center justify-between pt-4 px-1 border-t border-slate-100 dark:border-white/5">
+          <div className="flex items-center space-x-1"><div className="w-2 h-2 rounded-sm bg-slate-100 dark:bg-black"></div><span className="text-[8px] text-slate-400 dark:text-slate-500">0-10%</span></div>
+          <div className="flex items-center space-x-1"><div className="w-2 h-2 rounded-sm bg-orange-100 dark:bg-orange-900/40"></div><span className="text-[8px] text-slate-400 dark:text-slate-500">10-30%</span></div>
+          <div className="flex items-center space-x-1"><div className="w-2 h-2 rounded-sm bg-orange-300 dark:bg-orange-600/60"></div><span className="text-[8px] text-slate-400 dark:text-slate-500">30-50%</span></div>
+          <div className="flex items-center space-x-1"><div className="w-2 h-2 rounded-sm bg-orange-500 dark:bg-orange-500/90"></div><span className="text-[8px] text-slate-400 dark:text-slate-500">50-80%</span></div>
+          <div className="flex items-center space-x-1"><div className="w-2 h-2 rounded-sm bg-red-500"></div><span className="text-[8px] text-slate-400 dark:text-slate-500">80%+</span></div>
         </div>
       </div>
 
@@ -289,11 +289,11 @@ function App() {
   };
 
   const renderLegendText = (value) => {
-    return <span className={visibleSeries[value] ? 'text-gray-700 font-medium' : 'text-gray-300'}>{value}</span>;
+    return <span className={visibleSeries[value] ? 'text-slate-700 dark:text-slate-300 font-bold text-[10px] uppercase tracking-wider' : 'text-slate-300 dark:text-slate-600 text-[10px] uppercase tracking-wider'}>{value}</span>;
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#050505] text-slate-900 dark:text-slate-200 p-6 pb-24 font-sans selection:bg-orange-500/30 transition-colors duration-500">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#050505] text-slate-900 dark:text-slate-200 p-6 pb-24 font-sans selection:bg-orange-500/30 transition-all duration-700">
       <div className="max-w-md mx-auto space-y-4">
         <header className="py-6 px-6 flex justify-between items-center">
           <div>
@@ -303,17 +303,17 @@ function App() {
           <div className="flex items-center space-x-3">
             <button 
               onClick={() => setIsDark(!isDark)}
-              className="p-3 bg-white dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 rounded-2xl shadow-xl border border-slate-200 dark:border-white/10 active:scale-95 transition-all group backdrop-blur-md"
+              className="p-3 bg-white/80 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10 rounded-2xl shadow-xl border border-slate-200 dark:border-white/10 active:scale-95 transition-all group backdrop-blur-md flex items-center justify-center"
             >
-              {isDark ? (
-                <svg className="w-5 h-5 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.485a1 1 0 01-1.414 0l-.707-.707a1 1 0 011.414-1.414l.707.707a1 1 0 010 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" />
+              <div className="flex items-center space-x-1.5 text-slate-400">
+                <svg className={`w-4 h-4 ${!isDark ? 'text-orange-500' : 'opacity-40'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-11.314l.707.707m11.314 11.314l.707.707M12 8a4 4 0 100 8 4 4 0 000-8z" />
                 </svg>
-              ) : (
-                <svg className="w-5 h-5 text-slate-600" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
+                <span className="text-[10px] font-bold opacity-20">/</span>
+                <svg className={`w-4 h-4 ${isDark ? 'text-blue-400' : 'opacity-40'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
                 </svg>
-              )}
+              </div>
             </button>
             <button 
               onClick={fetchData}
@@ -415,7 +415,7 @@ function App() {
             )}
           </div>
         ) : (
-          <div className="bg-red-50 text-red-700 p-4 rounded-2xl text-sm border border-red-100">
+          <div className="bg-red-50 dark:bg-red-500/10 text-red-700 dark:text-red-400 p-4 rounded-2xl text-sm border border-red-100 dark:border-red-500/20">
             <strong>Data Error:</strong> Make sure <code>backend/data/sales.csv</code> contains data.
           </div>
         )}
@@ -424,7 +424,7 @@ function App() {
         <footer className="mt-12 pt-8 border-t border-slate-200 dark:border-white/5">
           <div className="flex items-center space-x-2">
             <div className={`w-2 h-2 rounded-full ${status.toLowerCase().includes('running') ? 'bg-green-500' : 'bg-amber-500'}`}></div>
-            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-600 uppercase tracking-[0.4em]">
+            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.4em]">
               System Status: {status}
             </span>
           </div>
