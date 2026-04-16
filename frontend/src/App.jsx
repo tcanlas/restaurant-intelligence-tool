@@ -190,6 +190,26 @@ function App() {
   const [status, setStatus] = useState('Connecting...');
   const [summary, setSummary] = useState(summaryData);
   const [isDark, setIsDark] = useState(true);
+  const [activeView, setActiveView] = useState('intelligence'); // intelligence | ingestion
+  const [entryData, setEntryData] = useState({
+    netSales: '',
+    laborCost: '',
+    laborHours: '',
+    compsVoids: '',
+    totalCovers: '',
+    reservations: '',
+  });
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setEntryData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const calculateSPLH = () => {
+    const sales = parseFloat(entryData.netSales) || 0;
+    const hours = parseFloat(entryData.laborHours) || 0;
+    return hours > 0 ? sales / hours : 0;
+  };
 
   useEffect(() => {
     if (isDark) document.documentElement.classList.add('dark');
@@ -327,96 +347,157 @@ function App() {
           </div>
         </header>
 
-        {/* Predictive Heat Map (Moved outside summary check for visibility) */}
-        <PredictiveHeatMap baselines={mockBaselines} rawHistory={hourlyHistoricalData} />
+        {/* View Switcher Navigation */}
+        <div className="flex bg-white/50 dark:bg-white/5 p-1 rounded-2xl border border-slate-200 dark:border-white/10 mb-6 backdrop-blur-md">
+          <button 
+            onClick={() => setActiveView('intelligence')}
+            className={`flex-1 py-2 text-[10px] font-bold rounded-xl transition-all duration-300 ${activeView === 'intelligence' ? 'bg-white dark:bg-white/10 text-orange-600 dark:text-orange-400 shadow-lg' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
+          >
+            INTELLIGENCE
+          </button>
+          <button 
+            onClick={() => setActiveView('ingestion')}
+            className={`flex-1 py-2 text-[10px] font-bold rounded-xl transition-all duration-300 ${activeView === 'ingestion' ? 'bg-white dark:bg-white/10 text-orange-600 dark:text-orange-400 shadow-lg' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
+          >
+            INGESTION
+          </button>
+        </div>
 
-        {loading ? (
-          <div className="flex justify-center items-center h-32 text-gray-400 animate-pulse">
-            Loading metrics...
-          </div>
-        ) : summary && !summary.error ? (
-          <div className="space-y-4">
-            <SalesOverview summary={summary} />
+        {activeView === 'intelligence' ? (
+          <div className="space-y-4 animate-in fade-in slide-in-from-left-4 duration-500">
+            {/* Predictive Heat Map */}
+            <PredictiveHeatMap baselines={mockBaselines} rawHistory={hourlyHistoricalData} />
 
-            {/* Trend Chart */}
-            {chartData.length > 0 && (
-              <div className="bg-white/80 dark:bg-white/5 backdrop-blur-xl p-8 rounded-[2.5rem] shadow-2xl border border-slate-200 dark:border-white/10">
-              <h3 className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-6">Velocity Metrics</h3>
-              <div className="h-48 w-full">
-                <ResponsiveContainer width="100%" height="100%" className="filter drop-shadow-lg">
-                  <AreaChart data={chartData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
-                    <defs>
-                      <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#ea580c" stopOpacity={0.1}/>
-                        <stop offset="95%" stopColor="#ea580c" stopOpacity={0}/>
-                      </linearGradient>
-                      <linearGradient id="colorLabor" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#6366f1" stopOpacity={0.1}/>
-                        <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDark ? "#ffffff08" : "#00000008"} />
-                    <XAxis dataKey="date" hide={true} />
-                    <YAxis yAxisId="left" hide={true} />
-                    <YAxis yAxisId="right" orientation="right" hide={true} domain={[0, 100]} />
-                    <Legend 
-                      verticalAlign="top" 
-                      align="right" 
-                      iconType="circle" 
-                      height={36} 
-                      formatter={renderLegendText}
-                      onClick={handleLegendClick}
-                      wrapperStyle={{ cursor: 'pointer', userSelect: 'none' }}
-                    />
-                    <Area 
-                      yAxisId="left" 
-                      type="monotone" 
-                      name="Sales" 
-                      dataKey="net_sales" 
-                      stroke="#ea580c" 
-                      strokeWidth={3} 
-                      fillOpacity={1} 
-                      fill="url(#colorSales)" 
-                      hide={!visibleSeries.Sales}
-                    />
-                    <Area 
-                      yAxisId="left" 
-                      type="monotone" 
-                      name="Labor" 
-                      dataKey="labor_cost" 
-                      stroke="#6366f1" 
-                      strokeWidth={3} 
-                      fillOpacity={1} 
-                      fill="url(#colorLabor)" 
-                      hide={!visibleSeries.Labor}
-                    />
-                    <Line 
-                      yAxisId="right" 
-                      type="monotone" 
-                      name="Labor %" 
-                      dataKey="labor_pct" 
-                      stroke="#10b981" 
-                      strokeWidth={2} 
-                      dot={false} 
-                      hide={!visibleSeries['Labor %']}
-                    />
-                    <Tooltip 
-                      formatter={(value, name) => name === 'Labor %' ? `${parseFloat(value).toFixed(1)}%` : formatCurrency(value)}
-                      contentStyle={{ 
-                        backgroundColor: isDark ? '#0f172a' : '#ffffff', 
-                        borderRadius: '20px', 
-                        border: isDark ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.05)', 
-                        boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)' }} 
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
+            {loading ? (
+              <div className="flex justify-center items-center h-32 text-gray-400 animate-pulse">
+                Loading metrics...
               </div>
+            ) : summary && !summary.error ? (
+              <div className="space-y-4">
+                <SalesOverview summary={summary} />
+
+                {/* Trend Chart */}
+                {chartData.length > 0 && (
+                  <div className="bg-white/80 dark:bg-white/5 backdrop-blur-xl p-8 rounded-[2.5rem] shadow-2xl border border-slate-200 dark:border-white/10">
+                    <h3 className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-6">Velocity Metrics</h3>
+                    <div className="h-48 w-full">
+                      <ResponsiveContainer width="100%" height="100%" className="filter drop-shadow-lg">
+                        <AreaChart data={chartData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+                          <defs>
+                            <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="#ea580c" stopOpacity={0.1}/>
+                              <stop offset="95%" stopColor="#ea580c" stopOpacity={0}/>
+                            </linearGradient>
+                            <linearGradient id="colorLabor" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="#6366f1" stopOpacity={0.1}/>
+                              <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
+                            </linearGradient>
+                          </defs>
+                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDark ? "#ffffff08" : "#00000008"} />
+                          <XAxis dataKey="date" hide={true} />
+                          <YAxis yAxisId="left" hide={true} />
+                          <YAxis yAxisId="right" orientation="right" hide={true} domain={[0, 100]} />
+                          <Legend 
+                            verticalAlign="top" 
+                            align="right" 
+                            iconType="circle" 
+                            height={36} 
+                            formatter={renderLegendText}
+                            onClick={handleLegendClick}
+                            wrapperStyle={{ cursor: 'pointer', userSelect: 'none' }}
+                          />
+                          <Area yAxisId="left" type="monotone" name="Sales" dataKey="net_sales" stroke="#ea580c" strokeWidth={3} fillOpacity={1} fill="url(#colorSales)" hide={!visibleSeries.Sales} />
+                          <Area yAxisId="left" type="monotone" name="Labor" dataKey="labor_cost" stroke="#6366f1" strokeWidth={3} fillOpacity={1} fill="url(#colorLabor)" hide={!visibleSeries.Labor} />
+                          <Line yAxisId="right" type="monotone" name="Labor %" dataKey="labor_pct" stroke="#10b981" strokeWidth={2} dot={false} hide={!visibleSeries['Labor %']} />
+                          <Tooltip 
+                            formatter={(value, name) => name === 'Labor %' ? `${parseFloat(value).toFixed(1)}%` : formatCurrency(value)}
+                            contentStyle={{ 
+                              backgroundColor: isDark ? '#0f172a' : '#ffffff', 
+                              borderRadius: '20px', 
+                              border: isDark ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.05)', 
+                              boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)' }} 
+                          />
+                        </AreaChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="bg-red-50 dark:bg-red-500/10 text-red-700 dark:text-red-400 p-4 rounded-2xl text-sm border border-red-100 dark:border-red-500/20">
+                <strong>Data Error:</strong> Make sure <code>backend/data/sales.csv</code> contains data.
               </div>
             )}
           </div>
         ) : (
-          <div className="bg-red-50 dark:bg-red-500/10 text-red-700 dark:text-red-400 p-4 rounded-2xl text-sm border border-red-100 dark:border-red-500/20">
-            <strong>Data Error:</strong> Make sure <code>backend/data/sales.csv</code> contains data.
+          <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-500">
+            {/* Dedicated Ingestion View */}
+            <div className="bg-white dark:bg-white/5 backdrop-blur-xl rounded-[2.5rem] shadow-2xl border border-slate-200 dark:border-white/10 overflow-hidden">
+              <div className="px-8 py-8 space-y-8">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h3 className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-1">Data Ingestion</h3>
+                    <p className="text-xl font-black text-slate-900 dark:text-white tracking-tight">Daily Record Entry</p>
+                  </div>
+                  <div className="bg-orange-500/10 px-3 py-1.5 rounded-full border border-orange-500/20">
+                    <span className="text-[10px] font-bold text-orange-600 dark:text-orange-400 uppercase tracking-wider">Secure Channel</span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-8">
+                  {/* Column 1: Financials */}
+                  <div className="space-y-5">
+                    <p className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest border-b border-slate-100 dark:border-white/5 pb-1">Financials</p>
+                    <div className="space-y-1.5">
+                      <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Net Sales ($)</label>
+                      <input type="number" name="netSales" value={entryData.netSales} onChange={handleInputChange} placeholder="0.00" className="w-full bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-orange-500/50 transition-all dark:text-white" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Total Orders</label>
+                      <input type="number" name="totalOrders" value={entryData.totalOrders} onChange={handleInputChange} placeholder="0" className="w-full bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-orange-500/50 transition-all dark:text-white" />
+                    </div>
+                  </div>
+
+                  {/* Column 2: Workforce */}
+                  <div className="space-y-5">
+                    <p className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest border-b border-slate-100 dark:border-white/5 pb-1">Workforce</p>
+                    <div className="space-y-1.5">
+                      <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Labor Cost ($)</label>
+                      <input type="number" name="laborCost" value={entryData.laborCost} onChange={handleInputChange} placeholder="0.00" className="w-full bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-orange-500/50 transition-all dark:text-white" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Labor Hours</label>
+                      <input type="number" name="laborHours" value={entryData.laborHours} onChange={handleInputChange} placeholder="0.0" className="w-full bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-orange-500/50 transition-all dark:text-white" />
+                    </div>
+                  </div>
+
+                  {/* Span 2: Capacity Volume */}
+                  <div className="col-span-2 space-y-5">
+                    <p className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest border-b border-slate-100 dark:border-white/5 pb-1">Capacity Volume</p>
+                    <div className="grid grid-cols-3 gap-6">
+                      <div className="space-y-1.5">
+                        <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Total Covers</label>
+                        <input type="number" name="totalCovers" value={entryData.totalCovers} onChange={handleInputChange} placeholder="0" className="w-full bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-orange-500/50 transition-all dark:text-white" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Reservations</label>
+                        <input type="number" name="reservations" value={entryData.reservations} onChange={handleInputChange} placeholder="0" className="w-full bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-orange-500/50 transition-all dark:text-white" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Walk-ins</label>
+                        <div className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm text-slate-400 dark:text-slate-500 font-bold">
+                          {Math.max(0, (parseInt(entryData.totalCovers) || 0) - (parseInt(entryData.reservations) || 0))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <button className="w-full bg-orange-600 hover:bg-orange-500 text-white font-black py-4 rounded-2xl shadow-xl shadow-orange-600/20 transition-all active:scale-[0.98] text-[10px] uppercase tracking-[0.3em]">
+                  Commit Data to Vault
+                </button>
+              </div>
+            </div>
           </div>
         )}
 
