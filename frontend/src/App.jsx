@@ -53,7 +53,7 @@ const PredictiveHeatMap = ({ baselines = {}, eventHour = 19, rawHistory = [] }) 
   };
 
   const getColor = (val) => {
-    if (val < 10) return 'bg-slate-200/50 dark:bg-slate-800/40';
+    if (val < 10) return 'bg-black/40';
     if (val < 30) return 'bg-orange-900/30';
     if (val < 50) return 'bg-orange-600/50';
     if (val < 80) return 'bg-orange-500/80';
@@ -61,17 +61,17 @@ const PredictiveHeatMap = ({ baselines = {}, eventHour = 19, rawHistory = [] }) 
   };
 
   return (
-    <div className="bg-white/5 backdrop-blur-xl p-8 rounded-[2.5rem] shadow-2xl border border-white/10 space-y-8 relative overflow-hidden">
+    <div className="bg-white/70 dark:bg-white/5 backdrop-blur-xl p-8 rounded-[2.5rem] shadow-2xl border border-slate-200 dark:border-white/10 space-y-8 relative overflow-hidden transition-colors duration-500">
       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-orange-500/50 to-transparent" />
       <div className="flex justify-between items-end">
         <div>
-          <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mb-1">Predictive Engine</h3>
-          <p className="text-lg font-black text-white tracking-tight">Demand Forecast</p>
+          <h3 className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-1">Predictive Engine</h3>
+          <p className="text-lg font-black text-slate-900 dark:text-white tracking-tight">Demand Forecast</p>
         </div>
         <select 
           value={selectedDay}
           onChange={(e) => setSelectedDay(e.target.value)}
-          className="bg-white/5 border border-white/10 text-white text-[10px] font-bold rounded-xl px-3 py-1.5 outline-none focus:ring-2 focus:ring-orange-500/50 transition-all cursor-pointer"
+          className="bg-white/50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-[10px] font-bold rounded-xl px-3 py-1.5 outline-none focus:ring-2 focus:ring-orange-500/50 transition-all cursor-pointer"
         >
           <option value="Monday">Monday</option>
           <option value="Tuesday">Tuesday</option>
@@ -81,12 +81,12 @@ const PredictiveHeatMap = ({ baselines = {}, eventHour = 19, rawHistory = [] }) 
           <option value="Saturday">Saturday</option>
           <option value="Sunday">Sunday</option>
         </select>
-        <div className="flex bg-black/40 p-1 rounded-xl border border-white/5">
+        <div className="flex bg-slate-200/50 dark:bg-black/40 p-1 rounded-xl border border-slate-300 dark:border-white/5">
           {['Sunny', 'Rainy'].map((w) => (
             <button
               key={w}
               onClick={() => setWeather(w)}
-              className={`px-4 py-1.5 text-[10px] font-bold rounded-lg transition-all duration-300 ${weather === w ? 'bg-white/10 text-orange-400 shadow-lg ring-1 ring-white/10' : 'text-slate-500 hover:text-slate-300'}`}
+              className={`px-4 py-1.5 text-[10px] font-bold rounded-lg transition-all duration-300 ${weather === w ? 'bg-white dark:bg-white/10 text-orange-600 dark:text-orange-400 shadow-lg ring-1 ring-black/5 dark:ring-white/10' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'}`}
             >
               {w}
             </button>
@@ -98,8 +98,8 @@ const PredictiveHeatMap = ({ baselines = {}, eventHour = 19, rawHistory = [] }) 
         {['Dining Room', 'Patio'].map((zone) => (
           <div key={zone}>
             <div className="flex justify-between items-center mb-2">
-              <span className="text-[9px] font-black uppercase text-slate-400 tracking-widest">{zone}</span>
-              <span className="text-[9px] text-slate-600">24H Dynamics</span>
+              <span className="text-[9px] font-black uppercase text-slate-500 dark:text-slate-400 tracking-widest">{zone}</span>
+              <span className="text-[9px] text-slate-400 dark:text-slate-600">24H Dynamics</span>
             </div>
             <div className="grid grid-cols-24 gap-1 h-8" onMouseLeave={() => setActiveCell(null)}>
               {hours.map((h) => {
@@ -112,7 +112,7 @@ const PredictiveHeatMap = ({ baselines = {}, eventHour = 19, rawHistory = [] }) 
                     key={h}
                     onMouseEnter={(e) => setActiveCell({ hour: h, zone, val, displayHour })}
                     onClick={() => setActiveCell({ hour: h, zone, val, displayHour })}
-                    className={`h-full rounded-[3px] border border-white/5 transition-all duration-500 cursor-crosshair ${getColor(val)} ${isHovered ? 'ring-2 ring-white/50 scale-110 z-10 shadow-xl' : ''}`}
+                    className={`h-full rounded-[3px] border border-black/5 dark:border-white/5 transition-all duration-500 cursor-crosshair ${getColor(val)} ${isHovered ? 'ring-2 ring-orange-500/50 dark:ring-white/50 scale-110 z-10 shadow-xl' : ''}`}
                   />
                 );
               })}
@@ -122,7 +122,7 @@ const PredictiveHeatMap = ({ baselines = {}, eventHour = 19, rawHistory = [] }) 
 
         {/* Custom Rich Tooltip */}
         {activeCell && (
-          <div className="absolute z-50 -top-16 left-0 right-0 mx-auto w-52 bg-slate-900/90 backdrop-blur-2xl text-white p-4 rounded-3xl border border-white/20 shadow-2xl pointer-events-none animate-in fade-in zoom-in slide-in-from-bottom-2 duration-300">
+          <div className="absolute z-50 -top-16 left-0 right-0 mx-auto w-52 bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl text-slate-900 dark:text-white p-4 rounded-3xl border border-slate-200 dark:border-white/20 shadow-2xl pointer-events-none animate-in fade-in zoom-in slide-in-from-bottom-2 duration-300">
             <div className="flex justify-between items-start mb-2">
               <div>
                 <p className="text-[10px] font-bold text-gray-400 uppercase">{activeCell.displayHour} • {activeCell.zone}</p>
@@ -148,16 +148,16 @@ const PredictiveHeatMap = ({ baselines = {}, eventHour = 19, rawHistory = [] }) 
         )}
 
         <div className="flex justify-between px-1">
-          <span className="text-[8px] text-slate-600 font-bold">12AM</span>
-          <span className="text-[8px] text-slate-600 font-bold">06AM</span>
-          <span className="text-[8px] text-slate-600 font-bold">12PM</span>
-          <span className="text-[8px] text-slate-600 font-bold">06PM</span>
-          <span className="text-[8px] text-slate-600 font-bold">11PM</span>
+          <span className="text-[8px] text-slate-400 dark:text-slate-600 font-bold">12AM</span>
+          <span className="text-[8px] text-slate-400 dark:text-slate-600 font-bold">06AM</span>
+          <span className="text-[8px] text-slate-400 dark:text-slate-600 font-bold">12PM</span>
+          <span className="text-[8px] text-slate-400 dark:text-slate-600 font-bold">06PM</span>
+          <span className="text-[8px] text-slate-400 dark:text-slate-600 font-bold">11PM</span>
         </div>
 
         {/* Color Key Legend */}
         <div className="flex items-center justify-between pt-2 px-1 border-t border-gray-50">
-          <div className="flex items-center space-x-1"><div className="w-2 h-2 rounded-sm bg-slate-200"></div><span className="text-[8px] text-gray-400">0-10%</span></div>
+          <div className="flex items-center space-x-1"><div className="w-2 h-2 rounded-sm bg-black/40"></div><span className="text-[8px] text-slate-400 dark:text-slate-500">0-10%</span></div>
           <div className="flex items-center space-x-1"><div className="w-2 h-2 rounded-sm bg-orange-200"></div><span className="text-[8px] text-gray-400">10-30%</span></div>
           <div className="flex items-center space-x-1"><div className="w-2 h-2 rounded-sm bg-orange-400"></div><span className="text-[8px] text-gray-400">30-50%</span></div>
           <div className="flex items-center space-x-1"><div className="w-2 h-2 rounded-sm bg-orange-600"></div><span className="text-[8px] text-gray-400">50-80%</span></div>
@@ -165,8 +165,8 @@ const PredictiveHeatMap = ({ baselines = {}, eventHour = 19, rawHistory = [] }) 
         </div>
       </div>
 
-      <div className="pt-6 border-t border-white/5 flex items-center justify-between">
-        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">
+      <div className="pt-6 border-t border-slate-200 dark:border-white/5 flex items-center justify-between">
+        <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-tighter">
           Event Intensity: <span className="text-orange-400 ml-1">{eventLevel === 0 ? 'Baseline' : `Level ${eventLevel}`}</span>
         </label>
         <input 
@@ -176,7 +176,7 @@ const PredictiveHeatMap = ({ baselines = {}, eventHour = 19, rawHistory = [] }) 
         />
       </div>
 
-      <div className={`mt-6 p-4 rounded-2xl text-[11px] font-medium border backdrop-blur-md transition-colors duration-500 ${peak > 80 ? 'bg-red-500/10 border-red-500/20 text-red-200' : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-200'}`}>
+      <div className={`mt-6 p-4 rounded-2xl text-[11px] font-medium border backdrop-blur-md transition-colors duration-500 ${peak > 80 ? 'bg-red-500/5 dark:bg-red-500/10 border-red-500/20 text-red-700 dark:text-red-200' : 'bg-emerald-500/5 dark:bg-emerald-500/10 border-emerald-500/20 text-emerald-700 dark:text-emerald-200'}`}>
         <span className="uppercase tracking-[0.2em] font-black block mb-2 opacity-50">Maestro's Directive</span>
         {peak > 80 
           ? "Critical volume anticipated. Deploy senior floor lead; initiate kitchen prep sequence by 17:00." 
@@ -189,6 +189,12 @@ const PredictiveHeatMap = ({ baselines = {}, eventHour = 19, rawHistory = [] }) 
 function App() {
   const [status, setStatus] = useState('Connecting...');
   const [summary, setSummary] = useState(summaryData);
+  const [isDark, setIsDark] = useState(true);
+
+  useEffect(() => {
+    if (isDark) document.documentElement.classList.add('dark');
+    else document.documentElement.classList.remove('dark');
+  }, [isDark]);
   
   // Initialize with local JSON data and calculate labor percentage immediately
   const [chartData, setChartData] = useState(salesTrendData.map(d => ({
@@ -287,22 +293,38 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#050505] text-slate-200 p-6 pb-24 font-sans selection:bg-orange-500/30">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#050505] text-slate-900 dark:text-slate-200 p-6 pb-24 font-sans selection:bg-orange-500/30 transition-colors duration-500">
       <div className="max-w-md mx-auto space-y-4">
         <header className="py-6 px-6 flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-black text-white tracking-tighter italic">THE VAULT</h1>
+            <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tighter italic">THE VAULT</h1>
             <p className="text-orange-500/80 text-[10px] font-bold uppercase tracking-[0.3em]">Operational Intelligence</p>
           </div>
-          <button 
-            onClick={fetchData}
-            disabled={loading}
-            className="p-3 bg-white/5 hover:bg-white/10 rounded-2xl shadow-xl border border-white/10 active:scale-95 transition-all group backdrop-blur-md"
-          >
-            <svg className={`w-5 h-5 text-slate-400 group-hover:text-orange-400 ${loading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-          </button>
+          <div className="flex items-center space-x-3">
+            <button 
+              onClick={() => setIsDark(!isDark)}
+              className="p-3 bg-white dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 rounded-2xl shadow-xl border border-slate-200 dark:border-white/10 active:scale-95 transition-all group backdrop-blur-md"
+            >
+              {isDark ? (
+                <svg className="w-5 h-5 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.485a1 1 0 01-1.414 0l-.707-.707a1 1 0 011.414-1.414l.707.707a1 1 0 010 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" />
+                </svg>
+              ) : (
+                <svg className="w-5 h-5 text-slate-600" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
+                </svg>
+              )}
+            </button>
+            <button 
+              onClick={fetchData}
+              disabled={loading}
+              className="p-3 bg-white dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 rounded-2xl shadow-xl border border-slate-200 dark:border-white/10 active:scale-95 transition-all group backdrop-blur-md"
+            >
+              <svg className={`w-5 h-5 text-slate-500 dark:text-slate-400 group-hover:text-orange-600 dark:group-hover:text-orange-400 ${loading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+            </button>
+          </div>
         </header>
 
         {/* Predictive Heat Map (Moved outside summary check for visibility) */}
@@ -318,8 +340,8 @@ function App() {
 
             {/* Trend Chart */}
             {chartData.length > 0 && (
-              <div className="bg-white/5 backdrop-blur-xl p-8 rounded-[2.5rem] shadow-2xl border border-white/10">
-              <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mb-6">Velocity Metrics</h3>
+              <div className="bg-white/80 dark:bg-white/5 backdrop-blur-xl p-8 rounded-[2.5rem] shadow-2xl border border-slate-200 dark:border-white/10">
+              <h3 className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-6">Velocity Metrics</h3>
               <div className="h-48 w-full">
                 <ResponsiveContainer width="100%" height="100%" className="filter drop-shadow-lg">
                   <AreaChart data={chartData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
@@ -333,7 +355,7 @@ function App() {
                         <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#ffffff08" />
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDark ? "#ffffff08" : "#00000008"} />
                     <XAxis dataKey="date" hide={true} />
                     <YAxis yAxisId="left" hide={true} />
                     <YAxis yAxisId="right" orientation="right" hide={true} domain={[0, 100]} />
@@ -381,9 +403,9 @@ function App() {
                     <Tooltip 
                       formatter={(value, name) => name === 'Labor %' ? `${parseFloat(value).toFixed(1)}%` : formatCurrency(value)}
                       contentStyle={{ 
-                        backgroundColor: '#0f172a', 
+                        backgroundColor: isDark ? '#0f172a' : '#ffffff', 
                         borderRadius: '20px', 
-                        border: '1px solid rgba(255,255,255,0.1)', 
+                        border: isDark ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.05)', 
                         boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)' }} 
                     />
                   </AreaChart>
@@ -399,10 +421,10 @@ function App() {
         )}
 
         {/* Bottom Status Bar */}
-        <footer className="mt-12 pt-8 border-t border-white/5">
+        <footer className="mt-12 pt-8 border-t border-slate-200 dark:border-white/5">
           <div className="flex items-center space-x-2">
             <div className={`w-2 h-2 rounded-full ${status.toLowerCase().includes('running') ? 'bg-green-500' : 'bg-amber-500'}`}></div>
-            <span className="text-[10px] font-bold text-slate-600 uppercase tracking-[0.4em]">
+            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-600 uppercase tracking-[0.4em]">
               System Status: {status}
             </span>
           </div>
