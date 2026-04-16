@@ -1,0 +1,9 @@
+[
+  { "date": "2024-05-10", "net_sales": 5200.50, "labor_cost": 1560.15 },
+  { "date": "2024-05-11", "net_sales": 4800.00, "labor_cost": 1440.00 },
+  { "date": "2024-05-12", "net_sales": 6100.25, "labor_cost": 1830.00 },
+  { "date": "2024-05-13", "net_sales": 3200.00, "labor_cost": 1100.00 },
+  { "date": "2024-05-14", "net_sales": 3900.75, "labor_cost": 1170.00 },
+  { "date": "2024-05-15", "net_sales": 4400.00, "labor_cost": 1320.00 },
+  { "date": "2024-05-16", "net_sales": 5500.50, "labor_cost": 1650.00 }
+]
