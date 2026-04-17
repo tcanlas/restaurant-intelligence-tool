@@ -5,6 +5,8 @@ import hourlyHistoricalData from './hourlyHistoricalData.json';
 import SalesOverview from './components/SalesOverview';
 import salesTrendData from './salesTrendData.json';
 import summaryData from './summaryData.json';
+import IngestionForm from './features/Ingestion/IngestionForm';
+import { calculateWalkins } from './utils/analytics';
 
 // --- Predictive Logic Component ---
 const PredictiveHeatMap = ({ baselines = {}, eventHour = 19, rawHistory = [] }) => {
@@ -191,27 +193,8 @@ function App() {
   const [summary, setSummary] = useState(summaryData);
   const [isDark, setIsDark] = useState(true);
   const [activeView, setActiveView] = useState('intelligence'); // intelligence | ingestion
-  const [entryData, setEntryData] = useState({
-    netSales: '',
-    laborCost: '',
-    laborHours: '',
-    compsVoids: '',
-    totalCovers: '',
-    reservations: '',
-  });
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setEntryData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const calculateSPLH = () => {
-    const sales = parseFloat(entryData.netSales) || 0;
-    const hours = parseFloat(entryData.laborHours) || 0;
-    return hours > 0 ? sales / hours : 0;
-  };
-
-  const handleCommit = async () => {
+  
+  const handleCommit = async (data) => {
     try {
       const response = await fetch('/api/vault', {
         method: 'POST',
@@ -219,30 +202,28 @@ function App() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          date: entryData.date,
-          totalCovers: entryData.totalCovers,
-          reservations: entryData.reservations
+          date: data.date,
+          totalCovers: data.totalCovers,
+          reservations: data.reservations,
+          eventIntensity: data.eventIntensity,
+          netSales: data.netSales,
+          laborCost: data.laborCost
         }),
       });
 
       if (response.ok) {
-        alert(`Operational data for ${entryData.date} has been successfully committed.`);
-        setEntryData({
-          date: new Date().toISOString().split('T')[0],
-          netSales: '',
-          laborCost: '',
-          laborHours: '',
-          compsVoids: '',
-          totalCovers: '',
-          reservations: '',
-        });
+        alert(`Operational data for ${data.date} committed successfully.`);
         fetchData();
+        return true;
       } else {
-        alert('Vault Error: Failed to save entry.');
+        const err = await response.json();
+        alert(`Vault Error: ${err.error || 'Failed to save entry.'}`);
+        return false;
       }
     } catch (err) {
       console.error('Commit Failure:', err);
       alert('Network Error: Could not connect to the backend.');
+      return false;
     }
   };
 
@@ -466,74 +447,7 @@ function App() {
           </div>
         ) : (
           <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-500">
-            {/* Dedicated Ingestion View */}
-            <div className="bg-white dark:bg-white/5 backdrop-blur-xl rounded-[2.5rem] shadow-2xl border border-slate-200 dark:border-white/10 overflow-hidden">
-              <div className="px-8 py-8 space-y-8">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h3 className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-1">Data Ingestion</h3>
-                    <p className="text-xl font-black text-slate-900 dark:text-white tracking-tight">Daily Record Entry</p>
-                  </div>
-                  <div className="bg-orange-500/10 px-3 py-1.5 rounded-full border border-orange-500/20">
-                    <span className="text-[10px] font-bold text-orange-600 dark:text-orange-400 uppercase tracking-wider">Secure Channel</span>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-8">
-                  <div className="col-span-2 space-y-1.5">
-                    <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Session Date</label>
-                    <input type="date" name="date" value={entryData.date} onChange={handleInputChange} className="w-full bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-orange-500/50 transition-all dark:text-white" />
-                  </div>
-
-                  {/* Column 1: Financials */}
-                  <div className="space-y-5">
-                    <p className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest border-b border-slate-100 dark:border-white/5 pb-1">Financials</p>
-                    <div className="space-y-1.5">
-                      <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Net Sales ($)</label>
-                      <input type="number" name="netSales" value={entryData.netSales} onChange={handleInputChange} placeholder="0.00" className="w-full bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-orange-500/50 transition-all dark:text-white" />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Total Orders</label>
-                      <input type="number" name="totalOrders" value={entryData.totalOrders} onChange={handleInputChange} placeholder="0" className="w-full bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-orange-500/50 transition-all dark:text-white" />
-                    </div>
-                  </div>
-
-                  {/* Column 2: Workforce */}
-                  <div className="space-y-5">
-                    <p className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest border-b border-slate-100 dark:border-white/5 pb-1">Workforce</p>
-                    <div className="space-y-1.5">
-                      <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Labor Cost ($)</label>
-                      <input type="number" name="laborCost" value={entryData.laborCost} onChange={handleInputChange} placeholder="0.00" className="w-full bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-orange-500/50 transition-all dark:text-white" />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Labor Hours</label>
-                      <input type="number" name="laborHours" value={entryData.laborHours} onChange={handleInputChange} placeholder="0.0" className="w-full bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-orange-500/50 transition-all dark:text-white" />
-                    </div>
-                  </div>
-
-                  {/* Span 2: Capacity Volume */}
-                  <div className="col-span-2 space-y-5">
-                    <p className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest border-b border-slate-100 dark:border-white/5 pb-1">Capacity Volume</p>
-                    <div className="grid grid-cols-3 gap-6">
-                      <div className="space-y-1.5">
-                        <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Total Covers</label>
-                        <input type="number" name="totalCovers" value={entryData.totalCovers} onChange={handleInputChange} placeholder="0" className="w-full bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-orange-500/50 transition-all dark:text-white" />
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Walk-ins</label>
-                        <div className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm text-slate-400 dark:text-slate-500 font-bold">
-                          {Math.max(0, (parseInt(entryData.totalCovers) || 0) - (parseInt(entryData.reservations) || 0))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <button onClick={handleCommit} className="w-full bg-orange-600 hover:bg-orange-500 text-white font-black py-4 rounded-2xl shadow-xl shadow-orange-600/20 transition-all active:scale-[0.98] text-[10px] uppercase tracking-[0.3em]">
-                  Commit Data to Vault
-                </button>
-              </div>
-            </div>
+            <IngestionForm onCommit={handleCommit} />
           </div>
         )}
 

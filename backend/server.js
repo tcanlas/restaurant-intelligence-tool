@@ -76,15 +76,15 @@ app.get('/api/sales-summary', (req, res) => {
 });
 
 app.post('/api/vault', (req, res) => {
-  const { date, totalCovers, reservations } = req.body;
+  const { date, totalCovers, reservations, netSales, laborCost, eventIntensity } = req.body;
 
   // Basic validation
   if (!date || totalCovers === undefined || reservations === undefined) {
     return res.status(400).json({ error: 'Missing required fields' });
   }
 
-  // Format: Date,TotalCovers,Reservations\n
-  const csvRow = `${date},${totalCovers},${reservations}\n`;
+  // Aligned with GET parser: date,net_sales,order_count,labor_cost,reservations,intensity
+  const csvRow = `${date},${netSales || 0},${totalCovers},${laborCost || 0},${reservations},${eventIntensity || 1}\n`;
   const filePath = path.join(__dirname, 'data', 'sales.csv');
 
   fs.appendFile(filePath, csvRow, (err) => {
