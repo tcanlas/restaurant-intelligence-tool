@@ -52,12 +52,14 @@ frontend/SalesOverview.jsx
 frontend/src/AllergenTracker.jsx
 frontend/src/App.jsx
 frontend/src/components/SalesOverview.jsx
+frontend/src/features/Ingestion/IngestionForm.jsx
 frontend/src/hourlyHistoricalData.json
 frontend/src/index.css
 frontend/src/main.jsx
 frontend/src/predictionData.json
 frontend/src/salesTrendData.json
 frontend/src/summaryData.json
+frontend/src/utils/analytics.js
 frontend/tailwind.config.js
 frontend/vite.config.js
 package.json
@@ -154,6 +156,140 @@ export default {
 export const AllergenTracker = () => {
   return <div>Allergen Tracker Coming Soon</div>;
 };
+</file>
+
+<file path="frontend/src/features/Ingestion/IngestionForm.jsx">
+import React, { useState } from 'react';
+import { 
+  calculateWalkins, 
+  calculateSPLH, 
+  calculateAverageCheck 
+} from '../../utils/analytics';
+
+const IngestionForm = ({ onCommit }) => {
+  const [entryData, setEntryData] = useState({
+    date: new Date().toISOString().split('T')[0],
+    netSales: '',
+    laborCost: '',
+    laborHours: '',
+    compsVoids: '',
+    totalCovers: '',
+    reservations: '',
+    eventIntensity: '1',
+  });
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setEntryData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const formatCurrency = (val) => 
+    new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val);
+
+  const handleSubmit = async () => {
+    const success = await onCommit(entryData);
+    if (success) {
+      setEntryData({
+        date: new Date().toISOString().split('T')[0],
+        netSales: '',
+        laborCost: '',
+        laborHours: '',
+        compsVoids: '',
+        totalCovers: '',
+        reservations: '',
+        eventIntensity: '1',
+      });
+    }
+  };
+
+  return (
+    <div className="bg-white dark:bg-white/5 backdrop-blur-xl rounded-[2.5rem] shadow-2xl border border-slate-200 dark:border-white/10 overflow-hidden">
+      <div className="px-8 py-8 space-y-8">
+        <div className="flex justify-between items-center">
+          <div>
+            <h3 className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-1">Data Ingestion</h3>
+            <p className="text-xl font-black text-slate-900 dark:text-white tracking-tight">Daily Record Entry</p>
+          </div>
+          <div className="bg-orange-500/10 px-3 py-1.5 rounded-full border border-orange-500/20">
+            <span className="text-[10px] font-bold text-orange-600 dark:text-orange-400 uppercase tracking-wider">Secure Channel</span>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-8">
+          <div className="col-span-2 space-y-1.5">
+            <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Session Date</label>
+            <input type="date" name="date" value={entryData.date} onChange={handleInputChange} className="w-full bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-orange-500/50 transition-all dark:text-white" />
+          </div>
+
+          {/* Column 1: Financials */}
+          <div className="space-y-5">
+            <p className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest border-b border-slate-100 dark:border-white/5 pb-1">Financials</p>
+            <div className="space-y-1.5">
+              <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Net Sales ($)</label>
+              <input type="number" name="netSales" value={entryData.netSales} onChange={handleInputChange} placeholder="0.00" className="w-full bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-orange-500/50 transition-all dark:text-white" />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Total Covers</label>
+              <input type="number" name="totalCovers" value={entryData.totalCovers} onChange={handleInputChange} placeholder="0" className="w-full bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-orange-500/50 transition-all dark:text-white" />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Avg Check (Derived)</label>
+              <div className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm text-slate-400 dark:text-slate-500 font-bold">
+                {formatCurrency(calculateAverageCheck(entryData.netSales, entryData.totalCovers))}
+              </div>
+            </div>
+          </div>
+
+          {/* Column 2: Operations */}
+          <div className="space-y-5">
+            <p className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest border-b border-slate-100 dark:border-white/5 pb-1">Operations</p>
+            <div className="space-y-1.5">
+              <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Labor Cost ($)</label>
+              <input type="number" name="laborCost" value={entryData.laborCost} onChange={handleInputChange} placeholder="0.00" className="w-full bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-orange-500/50 transition-all dark:text-white" />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Labor Hours</label>
+              <input type="number" name="laborHours" value={entryData.laborHours} onChange={handleInputChange} placeholder="0.0" className="w-full bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-orange-500/50 transition-all dark:text-white" />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Event Intensity (1-5)</label>
+              <input type="number" name="eventIntensity" min="1" max="5" value={entryData.eventIntensity} onChange={handleInputChange} className="w-full bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-orange-500/50 transition-all dark:text-white" />
+            </div>
+          </div>
+
+          {/* Span 2: Capacity Volume */}
+          <div className="col-span-2 space-y-5">
+            <p className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest border-b border-slate-100 dark:border-white/5 pb-1">Capacity Volume</p>
+            <div className="grid grid-cols-3 gap-6">
+              <div className="space-y-1.5">
+                <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Reservations</label>
+                <input type="number" name="reservations" value={entryData.reservations} onChange={handleInputChange} placeholder="0" className="w-full bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-orange-500/50 transition-all dark:text-white" />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Walk-ins</label>
+                <div className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm text-slate-400 dark:text-slate-500 font-bold">
+                  {calculateWalkins(entryData.totalCovers, entryData.reservations)}
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Efficiency (SPLH)</label>
+                <div className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm text-slate-400 dark:text-slate-500 font-bold">
+                  {formatCurrency(calculateSPLH(entryData.netSales, entryData.laborHours))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <button onClick={handleSubmit} className="w-full bg-orange-600 hover:bg-orange-500 text-white font-black py-4 rounded-2xl shadow-xl shadow-orange-600/20 transition-all active:scale-[0.98] text-[10px] uppercase tracking-[0.3em]">
+          Commit Data to Vault
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default IngestionForm;
 </file>
 
 <file path="frontend/src/hourlyHistoricalData.json">
@@ -492,6 +628,30 @@ ReactDOM.createRoot(document.getElementById('root')).render(
 }
 </file>
 
+<file path="frontend/src/utils/analytics.js">
+/**
+ * THE VAULT - Operational Intelligence Utilities
+ */
+
+export const calculateWalkins = (total, reservations) => {
+  const t = parseInt(total) || 0;
+  const r = parseInt(reservations) || 0;
+  return Math.max(0, t - r);
+};
+
+export const calculateSPLH = (sales, laborHours) => {
+  const s = parseFloat(sales) || 0;
+  const h = parseFloat(laborHours) || 0;
+  return h > 0 ? s / h : 0;
+};
+
+export const calculateAverageCheck = (sales, totalGuests) => {
+  const s = parseFloat(sales) || 0;
+  const g = parseInt(totalGuests) || 0;
+  return g > 0 ? s / g : 0;
+};
+</file>
+
 <file path="frontend/vite.config.js">
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
@@ -561,6 +721,25 @@ node_modules
 dist
 .env
 repomix-output.xml
+</file>
+
+<file path="frontend/tailwind.config.js">
+/** @type {import('tailwindcss').Config} */
+export default {
+  darkMode: 'class',
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+  ],
+  theme: {
+    extend: {
+      gridTemplateColumns: {
+        '24': 'repeat(24, minmax(0, 1fr))',
+      }
+    },
+  },
+  plugins: [],
+}
 </file>
 
 <file path="backend/server.js">
@@ -642,15 +821,15 @@ app.get('/api/sales-summary', (req, res) => {
 });
 
 app.post('/api/vault', (req, res) => {
-  const { date, totalCovers, reservations } = req.body;
+  const { date, totalCovers, reservations, netSales, laborCost, eventIntensity } = req.body;
 
   // Basic validation
   if (!date || totalCovers === undefined || reservations === undefined) {
     return res.status(400).json({ error: 'Missing required fields' });
   }
 
-  // Format: Date,TotalCovers,Reservations\n
-  const csvRow = `${date},${totalCovers},${reservations}\n`;
+  // Aligned with GET parser: date,net_sales,order_count,labor_cost,reservations,intensity
+  const csvRow = `${date},${netSales || 0},${totalCovers},${laborCost || 0},${reservations},${eventIntensity || 1}\n`;
   const filePath = path.join(__dirname, 'data', 'sales.csv');
 
   fs.appendFile(filePath, csvRow, (err) => {
@@ -667,25 +846,6 @@ app.post('/api/vault', (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
-</file>
-
-<file path="frontend/tailwind.config.js">
-/** @type {import('tailwindcss').Config} */
-export default {
-  darkMode: 'class',
-  content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
-  ],
-  theme: {
-    extend: {
-      gridTemplateColumns: {
-        '24': 'repeat(24, minmax(0, 1fr))',
-      }
-    },
-  },
-  plugins: [],
-}
 </file>
 
 <file path="frontend/src/components/SalesOverview.jsx">
@@ -752,6 +912,8 @@ import hourlyHistoricalData from './hourlyHistoricalData.json';
 import SalesOverview from './components/SalesOverview';
 import salesTrendData from './salesTrendData.json';
 import summaryData from './summaryData.json';
+import IngestionForm from './features/Ingestion/IngestionForm';
+import { calculateWalkins } from './utils/analytics';
 
 // --- Predictive Logic Component ---
 const PredictiveHeatMap = ({ baselines = {}, eventHour = 19, rawHistory = [] }) => {
@@ -818,15 +980,15 @@ const PredictiveHeatMap = ({ baselines = {}, eventHour = 19, rawHistory = [] }) 
         <select 
           value={selectedDay}
           onChange={(e) => setSelectedDay(e.target.value)}
-          className="bg-white/50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-[10px] font-bold rounded-xl px-3 py-1.5 outline-none focus:ring-2 focus:ring-orange-500/50 transition-all cursor-pointer"
+          className="bg-white/50 dark:bg-slate-900 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-[10px] font-bold rounded-xl px-3 py-1.5 outline-none focus:ring-2 focus:ring-orange-500/50 transition-all cursor-pointer"
         >
-          <option value="Monday">Monday</option>
-          <option value="Tuesday">Tuesday</option>
-          <option value="Wednesday">Wednesday</option>
-          <option value="Thursday">Thursday</option>
-          <option value="Friday">Friday</option>
-          <option value="Saturday">Saturday</option>
-          <option value="Sunday">Sunday</option>
+          <option value="Monday" className="dark:bg-slate-900">Monday</option>
+          <option value="Tuesday" className="dark:bg-slate-900">Tuesday</option>
+          <option value="Wednesday" className="dark:bg-slate-900">Wednesday</option>
+          <option value="Thursday" className="dark:bg-slate-900">Thursday</option>
+          <option value="Friday" className="dark:bg-slate-900">Friday</option>
+          <option value="Saturday" className="dark:bg-slate-900">Saturday</option>
+          <option value="Sunday" className="dark:bg-slate-900">Sunday</option>
         </select>
         <div className="flex bg-slate-200/50 dark:bg-black/40 p-1 rounded-xl border border-slate-300 dark:border-white/5">
           {['Sunny', 'Rainy'].map((w) => (
@@ -938,27 +1100,8 @@ function App() {
   const [summary, setSummary] = useState(summaryData);
   const [isDark, setIsDark] = useState(true);
   const [activeView, setActiveView] = useState('intelligence'); // intelligence | ingestion
-  const [entryData, setEntryData] = useState({
-    netSales: '',
-    laborCost: '',
-    laborHours: '',
-    compsVoids: '',
-    totalCovers: '',
-    reservations: '',
-  });
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setEntryData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const calculateSPLH = () => {
-    const sales = parseFloat(entryData.netSales) || 0;
-    const hours = parseFloat(entryData.laborHours) || 0;
-    return hours > 0 ? sales / hours : 0;
-  };
-
-  const handleCommit = async () => {
+  
+  const handleCommit = async (data) => {
     try {
       const response = await fetch('/api/vault', {
         method: 'POST',
@@ -966,30 +1109,28 @@ function App() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          date: entryData.date,
-          totalCovers: entryData.totalCovers,
-          reservations: entryData.reservations
+          date: data.date,
+          totalCovers: data.totalCovers,
+          reservations: data.reservations,
+          eventIntensity: data.eventIntensity,
+          netSales: data.netSales,
+          laborCost: data.laborCost
         }),
       });
 
       if (response.ok) {
-        alert(`Operational data for ${entryData.date} has been successfully committed.`);
-        setEntryData({
-          date: new Date().toISOString().split('T')[0],
-          netSales: '',
-          laborCost: '',
-          laborHours: '',
-          compsVoids: '',
-          totalCovers: '',
-          reservations: '',
-        });
+        alert(`Operational data for ${data.date} committed successfully.`);
         fetchData();
+        return true;
       } else {
-        alert('Vault Error: Failed to save entry.');
+        const err = await response.json();
+        alert(`Vault Error: ${err.error || 'Failed to save entry.'}`);
+        return false;
       }
     } catch (err) {
       console.error('Commit Failure:', err);
       alert('Network Error: Could not connect to the backend.');
+      return false;
     }
   };
 
@@ -1213,74 +1354,7 @@ function App() {
           </div>
         ) : (
           <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-500">
-            {/* Dedicated Ingestion View */}
-            <div className="bg-white dark:bg-white/5 backdrop-blur-xl rounded-[2.5rem] shadow-2xl border border-slate-200 dark:border-white/10 overflow-hidden">
-              <div className="px-8 py-8 space-y-8">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h3 className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-1">Data Ingestion</h3>
-                    <p className="text-xl font-black text-slate-900 dark:text-white tracking-tight">Daily Record Entry</p>
-                  </div>
-                  <div className="bg-orange-500/10 px-3 py-1.5 rounded-full border border-orange-500/20">
-                    <span className="text-[10px] font-bold text-orange-600 dark:text-orange-400 uppercase tracking-wider">Secure Channel</span>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-8">
-                  <div className="col-span-2 space-y-1.5">
-                    <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Session Date</label>
-                    <input type="date" name="date" value={entryData.date} onChange={handleInputChange} className="w-full bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-orange-500/50 transition-all dark:text-white" />
-                  </div>
-
-                  {/* Column 1: Financials */}
-                  <div className="space-y-5">
-                    <p className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest border-b border-slate-100 dark:border-white/5 pb-1">Financials</p>
-                    <div className="space-y-1.5">
-                      <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Net Sales ($)</label>
-                      <input type="number" name="netSales" value={entryData.netSales} onChange={handleInputChange} placeholder="0.00" className="w-full bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-orange-500/50 transition-all dark:text-white" />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Total Orders</label>
-                      <input type="number" name="totalOrders" value={entryData.totalOrders} onChange={handleInputChange} placeholder="0" className="w-full bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-orange-500/50 transition-all dark:text-white" />
-                    </div>
-                  </div>
-
-                  {/* Column 2: Workforce */}
-                  <div className="space-y-5">
-                    <p className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest border-b border-slate-100 dark:border-white/5 pb-1">Workforce</p>
-                    <div className="space-y-1.5">
-                      <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Labor Cost ($)</label>
-                      <input type="number" name="laborCost" value={entryData.laborCost} onChange={handleInputChange} placeholder="0.00" className="w-full bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-orange-500/50 transition-all dark:text-white" />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Labor Hours</label>
-                      <input type="number" name="laborHours" value={entryData.laborHours} onChange={handleInputChange} placeholder="0.0" className="w-full bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-orange-500/50 transition-all dark:text-white" />
-                    </div>
-                  </div>
-
-                  {/* Span 2: Capacity Volume */}
-                  <div className="col-span-2 space-y-5">
-                    <p className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest border-b border-slate-100 dark:border-white/5 pb-1">Capacity Volume</p>
-                    <div className="grid grid-cols-3 gap-6">
-                      <div className="space-y-1.5">
-                        <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Total Covers</label>
-                        <input type="number" name="totalCovers" value={entryData.totalCovers} onChange={handleInputChange} placeholder="0" className="w-full bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-orange-500/50 transition-all dark:text-white" />
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Walk-ins</label>
-                        <div className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm text-slate-400 dark:text-slate-500 font-bold">
-                          {Math.max(0, (parseInt(entryData.totalCovers) || 0) - (parseInt(entryData.reservations) || 0))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <button onClick={handleCommit} className="w-full bg-orange-600 hover:bg-orange-500 text-white font-black py-4 rounded-2xl shadow-xl shadow-orange-600/20 transition-all active:scale-[0.98] text-[10px] uppercase tracking-[0.3em]">
-                  Commit Data to Vault
-                </button>
-              </div>
-            </div>
+            <IngestionForm onCommit={handleCommit} />
           </div>
         )}
 
