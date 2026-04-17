@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { AreaChart, Area, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import PredictiveHeatMap from './Dashboard/PredictiveHeatMap';
 import StatCard from '../components/ui/StatCard';
 import { 
   formatCurrency, 
@@ -12,13 +13,24 @@ const DashboardView = ({
   chartData, 
   isDark, 
   loading, 
-  visibleSeries, 
-  handleLegendClick, 
-  renderLegendText,
-  PredictiveHeatMap, // Passed as a sub-component to keep App.jsx imports organized
   mockBaselines,
   hourlyHistoricalData
 }) => {
+  const [visibleSeries, setVisibleSeries] = useState({
+    Sales: true,
+    Labor: true,
+    'Labor %': true
+  });
+
+  const handleLegendClick = (e) => {
+    const { value } = e;
+    setVisibleSeries(prev => ({ ...prev, [value]: !prev[value] }));
+  };
+
+  const renderLegendText = (value) => {
+    return <span className={visibleSeries[value] ? 'text-slate-700 dark:text-slate-300 font-bold text-[10px] uppercase tracking-wider' : 'text-slate-300 dark:text-slate-600 text-[10px] uppercase tracking-wider'}>{value}</span>;
+  };
+
   return (
     <div className="space-y-4 animate-in fade-in slide-in-from-left-4 duration-500">
       {/* Predictive Heat Map */}
