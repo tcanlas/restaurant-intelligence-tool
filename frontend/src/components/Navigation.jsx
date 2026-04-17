@@ -51,7 +51,7 @@ const Navigation = ({ activeTab, setActiveTab, isDark, setIsDark, onRefresh, loa
       </header>
 
       {/* Segmented View Control */}
-      <div className="flex bg-white/50 dark:bg-white/5 p-1.5 rounded-2.5xl border border-slate-200 dark:border-white/10 mb-6 backdrop-blur-md">
+      <div className="flex gap-2 mb-6">
         <button 
           onClick={() => setActiveTab('intelligence')}
           className={`flex-1 py-3 text-[10px] font-black rounded-2xl transition-all duration-500 tracking-[0.1em] ${

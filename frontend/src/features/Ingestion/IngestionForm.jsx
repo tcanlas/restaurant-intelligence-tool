@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { 
   calculateWalkins, 
   calculateSPLH, 
@@ -7,6 +7,8 @@ import {
 } from '../../utils/analytics';
 
 const IngestionForm = ({ onCommit }) => {
+  const dateInputRef = useRef(null);
+
   const [entryData, setEntryData] = useState({
     date: new Date().toISOString().split('T')[0],
     netSales: '',
@@ -53,9 +55,27 @@ const IngestionForm = ({ onCommit }) => {
         </div>
 
         <div className="grid grid-cols-2 gap-8">
-          <div className="col-span-2 space-y-1.5">
-            <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Session Date</label>
-            <input type="date" name="date" value={entryData.date} onChange={handleInputChange} className="w-full bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-orange-500/50 transition-all dark:text-white" />
+          <div className="col-span-2 group relative">
+            <label className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase ml-1 tracking-[0.2em] mb-2 block">Reporting Period</label>
+            <div className="relative">
+              <button 
+                type="button"
+                onClick={() => dateInputRef.current?.showPicker()}
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-orange-500 z-10 transition-transform hover:scale-110 active:scale-90"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </button>
+              <input 
+                ref={dateInputRef}
+                type="date" 
+                name="date" 
+                value={entryData.date} 
+                onChange={handleInputChange} 
+                className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl pl-12 pr-4 py-4 text-sm font-bold outline-none focus:ring-2 focus:ring-orange-500/20 transition-all dark:text-white cursor-pointer hover:bg-slate-200 dark:hover:bg-white/10 dark:[color-scheme:dark] [&::-webkit-calendar-picker-indicator]:hidden" 
+              />
+            </div>
           </div>
 
           {/* Column 1: Financials */}

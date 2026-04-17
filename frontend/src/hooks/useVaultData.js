@@ -48,6 +48,11 @@ const useVaultData = () => {
     }
   }, []);
 
+  // Trigger initial synchronization on mount
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
   const handleCommit = async (data) => {
     try {
       const response = await fetch('/api/vault', {
