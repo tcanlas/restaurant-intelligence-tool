@@ -211,6 +211,41 @@ function App() {
     return hours > 0 ? sales / hours : 0;
   };
 
+  const handleCommit = async () => {
+    try {
+      const response = await fetch('/api/vault', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          date: entryData.date,
+          totalCovers: entryData.totalCovers,
+          reservations: entryData.reservations
+        }),
+      });
+
+      if (response.ok) {
+        alert(`Operational data for ${entryData.date} has been successfully committed.`);
+        setEntryData({
+          date: new Date().toISOString().split('T')[0],
+          netSales: '',
+          laborCost: '',
+          laborHours: '',
+          compsVoids: '',
+          totalCovers: '',
+          reservations: '',
+        });
+        fetchData();
+      } else {
+        alert('Vault Error: Failed to save entry.');
+      }
+    } catch (err) {
+      console.error('Commit Failure:', err);
+      alert('Network Error: Could not connect to the backend.');
+    }
+  };
+
   useEffect(() => {
     if (isDark) document.documentElement.classList.add('dark');
     else document.documentElement.classList.remove('dark');
@@ -445,6 +480,11 @@ function App() {
                 </div>
 
                 <div className="grid grid-cols-2 gap-8">
+                  <div className="col-span-2 space-y-1.5">
+                    <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Session Date</label>
+                    <input type="date" name="date" value={entryData.date} onChange={handleInputChange} className="w-full bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-orange-500/50 transition-all dark:text-white" />
+                  </div>
+
                   {/* Column 1: Financials */}
                   <div className="space-y-5">
                     <p className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest border-b border-slate-100 dark:border-white/5 pb-1">Financials</p>
@@ -480,10 +520,6 @@ function App() {
                         <input type="number" name="totalCovers" value={entryData.totalCovers} onChange={handleInputChange} placeholder="0" className="w-full bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-orange-500/50 transition-all dark:text-white" />
                       </div>
                       <div className="space-y-1.5">
-                        <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Reservations</label>
-                        <input type="number" name="reservations" value={entryData.reservations} onChange={handleInputChange} placeholder="0" className="w-full bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-orange-500/50 transition-all dark:text-white" />
-                      </div>
-                      <div className="space-y-1.5">
                         <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Walk-ins</label>
                         <div className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm text-slate-400 dark:text-slate-500 font-bold">
                           {Math.max(0, (parseInt(entryData.totalCovers) || 0) - (parseInt(entryData.reservations) || 0))}
@@ -493,7 +529,7 @@ function App() {
                   </div>
                 </div>
 
-                <button className="w-full bg-orange-600 hover:bg-orange-500 text-white font-black py-4 rounded-2xl shadow-xl shadow-orange-600/20 transition-all active:scale-[0.98] text-[10px] uppercase tracking-[0.3em]">
+                <button onClick={handleCommit} className="w-full bg-orange-600 hover:bg-orange-500 text-white font-black py-4 rounded-2xl shadow-xl shadow-orange-600/20 transition-all active:scale-[0.98] text-[10px] uppercase tracking-[0.3em]">
                   Commit Data to Vault
                 </button>
               </div>

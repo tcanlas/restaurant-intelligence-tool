@@ -75,6 +75,29 @@ app.get('/api/sales-summary', (req, res) => {
     });
 });
 
+app.post('/api/vault', (req, res) => {
+  const { date, totalCovers, reservations } = req.body;
+
+  // Basic validation
+  if (!date || totalCovers === undefined || reservations === undefined) {
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
+
+  // Format: Date,TotalCovers,Reservations\n
+  const csvRow = `${date},${totalCovers},${reservations}\n`;
+  const filePath = path.join(__dirname, 'data', 'sales.csv');
+
+  fs.appendFile(filePath, csvRow, (err) => {
+    if (err) {
+      console.error('Vault Write Error:', err);
+      return res.status(500).json({ error: 'Failed to write to Vault storage' });
+    }
+    console.log(`Vault updated for date: ${date}`);
+    res.status(200).json({ message: 'Success' });
+  });
+});
+
+
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
