@@ -73,15 +73,15 @@ const PredictiveHeatMap = ({ baselines = {}, eventHour = 19, rawHistory = [] }) 
         <select 
           value={selectedDay}
           onChange={(e) => setSelectedDay(e.target.value)}
-          className="bg-white/50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-[10px] font-bold rounded-xl px-3 py-1.5 outline-none focus:ring-2 focus:ring-orange-500/50 transition-all cursor-pointer"
+          className="bg-white/50 dark:bg-slate-900 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-[10px] font-bold rounded-xl px-3 py-1.5 outline-none focus:ring-2 focus:ring-orange-500/50 transition-all cursor-pointer"
         >
-          <option value="Monday">Monday</option>
-          <option value="Tuesday">Tuesday</option>
-          <option value="Wednesday">Wednesday</option>
-          <option value="Thursday">Thursday</option>
-          <option value="Friday">Friday</option>
-          <option value="Saturday">Saturday</option>
-          <option value="Sunday">Sunday</option>
+          <option value="Monday" className="dark:bg-slate-900">Monday</option>
+          <option value="Tuesday" className="dark:bg-slate-900">Tuesday</option>
+          <option value="Wednesday" className="dark:bg-slate-900">Wednesday</option>
+          <option value="Thursday" className="dark:bg-slate-900">Thursday</option>
+          <option value="Friday" className="dark:bg-slate-900">Friday</option>
+          <option value="Saturday" className="dark:bg-slate-900">Saturday</option>
+          <option value="Sunday" className="dark:bg-slate-900">Sunday</option>
         </select>
         <div className="flex bg-slate-200/50 dark:bg-black/40 p-1 rounded-xl border border-slate-300 dark:border-white/5">
           {['Sunny', 'Rainy'].map((w) => (
