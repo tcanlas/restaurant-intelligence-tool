@@ -29,3 +29,24 @@ export const calculateLaborPercentage = (laborCost, netSales) => {
 export const formatCurrency = (amount) => {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount || 0);
 };
+
+export const calculateBaselinesFromRaw = (historicalData) => {
+  const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+  const result = {};
+
+  days.forEach(dayName => {
+    const resAverages = Array(24).fill(0);
+    const walkInAverages = Array(24).fill(0);
+    
+    for (let h = 0; h < 24; h++) {
+      const entries = historicalData.filter(d => d.day === dayName && d.hour === h);
+      if (entries.length > 0) {
+        resAverages[h] = entries.reduce((acc, curr) => acc + (curr.res_covers || 0), 0) / entries.length;
+        walkInAverages[h] = entries.reduce((acc, curr) => acc + (curr.walk_in_covers || 0), 0) / entries.length;
+      }
+    }
+    result[dayName] = { res: resAverages, walkIn: walkInAverages };
+  });
+
+  return result;
+};

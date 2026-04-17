@@ -5,10 +5,7 @@ import IngestionForm from './features/Ingestion/IngestionForm';
 import DashboardView from "./features/DashboardView";
 import Navigation from "./components/Navigation";
 import useVaultData from './hooks/useVaultData';
-import { 
-  calculateLaborPercentage, 
-  formatCurrency 
-} from './utils/analytics';
+import { calculateBaselinesFromRaw } from './utils/analytics';
 
 
 function App() {
@@ -29,34 +26,10 @@ function App() {
     else document.documentElement.classList.remove('dark');
   }, [isDark]);
    
-
-  // --- Data Translation Logic ---
-  // This function transforms raw cover counts into the 0-100 "Heat" scale
-  const calculateBaselinesFromRaw = () => {
-    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-    const result = {};
-
-    days.forEach(dayName => {
-      const resAverages = Array(24).fill(0);
-      const walkInAverages = Array(24).fill(0);
-      
-      for (let h = 0; h < 24; h++) {
-        const entries = hourlyHistoricalData.filter(d => d.day === dayName && d.hour === h);
-        if (entries.length > 0) {
-          resAverages[h] = entries.reduce((acc, curr) => acc + (curr.res_covers || 0), 0) / entries.length;
-          walkInAverages[h] = entries.reduce((acc, curr) => acc + (curr.walk_in_covers || 0), 0) / entries.length;
-        }
-      }
-      result[dayName] = { res: resAverages, walkIn: walkInAverages };
-    });
-
-    return result;
-  };
-
   // We combine the calculated baselines with any overrides from our static config
   const mockBaselines = {
     ...predictionData.baselines,
-    ...calculateBaselinesFromRaw()
+    ...calculateBaselinesFromRaw(hourlyHistoricalData)
   };
 
 

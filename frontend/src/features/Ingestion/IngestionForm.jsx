@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { 
   calculateWalkins, 
   calculateSPLH, 
-  calculateAverageCheck 
+  calculateAverageCheck,
+  formatCurrency
 } from '../../utils/analytics';
 
 const IngestionForm = ({ onCommit }) => {
@@ -21,9 +22,6 @@ const IngestionForm = ({ onCommit }) => {
     const { name, value } = e.target;
     setEntryData(prev => ({ ...prev, [name]: value }));
   };
-
-  const formatCurrency = (val) => 
-    new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val);
 
   const handleSubmit = async () => {
     const success = await onCommit(entryData);
