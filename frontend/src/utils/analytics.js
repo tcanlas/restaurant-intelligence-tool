@@ -35,6 +35,10 @@ export const formatCurrency = (amount) => {
   }).format(amount || 0);
 };
 
+export const formatNumber = (value) => {
+  return new Intl.NumberFormat('en-US').format(value || 0);
+};
+
 export const formatPercent = (value) => {
   const val = parseFloat(value) || 0;
   return `${val.toFixed(val % 1 === 0 ? 0 : 1)}%`;
@@ -43,6 +47,12 @@ export const formatPercent = (value) => {
 export const calculatePercentageChange = (current, previous) => {
   if (!previous || previous === 0) return 0;
   return ((current - previous) / previous) * 100;
+};
+
+export const formatTrend = (current, previous) => {
+  const change = calculatePercentageChange(current, previous);
+  if (change === 0) return null;
+  return `${change > 0 ? '+' : ''}${formatPercent(change)}`;
 };
 
 export const calculateBaselinesFromRaw = (historicalData) => {

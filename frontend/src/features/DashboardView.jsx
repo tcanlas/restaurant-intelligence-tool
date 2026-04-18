@@ -5,10 +5,11 @@ import StatCard from '../components/ui/StatCard';
 import { 
   formatCurrency, 
   formatPercent,
-  calculateWalkins,
   calculateAverageCheck, 
   calculateLaborPercentage,
-  calculatePercentageChange
+  calculatePercentageChange,
+  formatNumber,
+  formatTrend
 } from '../utils/analytics';
 import { OPERATIONAL_CONFIG } from '../config/constants';
 
@@ -20,12 +21,6 @@ const DashboardView = ({
   mockBaselines,
   hourlyHistoricalData
 }) => {
-  const getTrend = (curr, prev) => {
-    const change = calculatePercentageChange(curr, prev);
-    if (!change) return null;
-    return `${change > 0 ? '+' : ''}${formatPercent(change)}`;
-  };
-
   const latest = chartData[chartData.length - 1];
   const prev = chartData[chartData.length - 2];
 
@@ -37,28 +32,28 @@ const DashboardView = ({
       value: formatCurrency(summary.total_sales),
       color: "text-emerald-500",
       icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>,
-      trend: getTrend(latest?.net_sales, prev?.net_sales)
+      trend: formatTrend(latest?.net_sales, prev?.net_sales)
     },
     {
       title: "Avg. Check",
       value: formatCurrency(calculateAverageCheck(summary.total_sales, summary.total_orders)),
       color: "text-orange-500",
       icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>,
-      trend: getTrend(calculateAverageCheck(latest?.net_sales, latest?.order_count), calculateAverageCheck(prev?.net_sales, prev?.order_count))
+      trend: formatTrend(calculateAverageCheck(latest?.net_sales, latest?.order_count), calculateAverageCheck(prev?.net_sales, prev?.order_count))
     },
     {
       title: "Labor Cost",
       value: formatCurrency(summary.total_labor),
       color: "text-indigo-500",
       icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
-      trend: getTrend(latest?.labor_cost, prev?.labor_cost)
+      trend: formatTrend(latest?.labor_cost, prev?.labor_cost)
     },
     {
       title: "Labor Efficiency",
       value: formatPercent(laborPct),
       color: laborPct > OPERATIONAL_CONFIG.LABOR_THRESHOLD_PCT ? "text-red-500" : "text-orange-500",
       icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
-      trend: getTrend(latest?.labor_pct, prev?.labor_pct),
+      trend: formatTrend(latest?.labor_pct, prev?.labor_pct),
       subValue: laborPct > OPERATIONAL_CONFIG.LABOR_THRESHOLD_PCT && (
         <p className="text-[10px] text-red-600 dark:text-red-500/80 font-black animate-pulse tracking-tighter uppercase">Critical Exposure</p>
       )
