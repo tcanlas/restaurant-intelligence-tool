@@ -4,6 +4,7 @@ import PredictiveHeatMap from './Dashboard/PredictiveHeatMap';
 import StatCard from '../components/ui/StatCard';
 import { 
   formatCurrency, 
+  formatPercent,
   calculateAverageCheck, 
   calculateLaborPercentage,
   calculatePercentageChange
@@ -46,13 +47,48 @@ const DashboardView = ({
 
     return (
       <span className={`${colorClass} px-2 py-0.5 rounded-full border text-[10px] font-bold inline-flex items-center`}>
-        {isPositive ? '↑' : '↓'} {Math.abs(change).toFixed(1)}%
+        {isPositive ? '↑' : '↓'} {formatPercent(Math.abs(change))}
       </span>
     );
   };
 
   const latest = chartData[chartData.length - 1];
   const prev = chartData[chartData.length - 2];
+
+  const laborPct = calculateLaborPercentage(summary.total_labor, summary.total_sales);
+
+  const statsConfiguration = [
+    {
+      title: "Net Sales",
+      value: formatCurrency(summary.total_sales),
+      color: "text-emerald-500",
+      icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>,
+      subValue: renderTrend(latest?.net_sales, prev?.net_sales)
+    },
+    {
+      title: "Avg. Check",
+      value: formatCurrency(calculateAverageCheck(summary.total_sales, summary.total_orders)),
+      color: "text-orange-500",
+      icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>,
+      subValue: renderTrend(calculateAverageCheck(latest?.net_sales, latest?.order_count), calculateAverageCheck(prev?.net_sales, prev?.order_count))
+    },
+    {
+      title: "Labor Cost",
+      value: formatCurrency(summary.total_labor),
+      color: "text-indigo-500",
+      icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+      subValue: renderTrend(latest?.labor_cost, prev?.labor_cost, true)
+    },
+    {
+      title: "Labor Efficiency",
+      value: formatPercent(laborPct),
+      color: laborPct > 30 ? "text-red-500" : "text-orange-500",
+      icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+      subValue: laborPct > 30 && (
+        <p className="text-[10px] text-red-600 dark:text-red-500/80 font-black animate-pulse tracking-tighter uppercase">Critical Exposure</p>
+      )
+    }
+  ];
 
   return (
     <div className="space-y-4 animate-in fade-in slide-in-from-left-4 duration-500">
@@ -66,46 +102,9 @@ const DashboardView = ({
       ) : summary && !summary.error ? (
         <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <StatCard 
-              title="Net Sales"
-              value={formatCurrency(summary.total_sales)}
-              color="text-emerald-500"
-              icon={
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
-              }
-              subValue={renderTrend(latest?.net_sales, prev?.net_sales)}
-            />
-            <StatCard 
-              title="Avg. Check"
-              value={formatCurrency(calculateAverageCheck(summary.total_sales, summary.total_orders))}
-              color="text-orange-500"
-              icon={
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
-              }
-              subValue={renderTrend(calculateAverageCheck(latest?.net_sales, latest?.order_count), calculateAverageCheck(prev?.net_sales, prev?.order_count))}
-            />
-            <StatCard 
-              title="Labor Cost"
-              value={formatCurrency(summary.total_labor)}
-              color="text-indigo-500"
-              icon={
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-              }
-              subValue={renderTrend(latest?.labor_cost, prev?.labor_cost, true)}
-            />
-            <StatCard 
-              title="Labor Efficiency"
-              value={`${calculateLaborPercentage(summary.total_labor, summary.total_sales).toFixed(1)}%`}
-              color={calculateLaborPercentage(summary.total_labor, summary.total_sales) > 30 ? "text-red-500" : "text-orange-500"}
-              icon={
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-              }
-              subValue={
-                calculateLaborPercentage(summary.total_labor, summary.total_sales) > 30 && (
-                  <p className="text-[10px] text-red-600 dark:text-red-500/80 font-black animate-pulse tracking-tighter uppercase">Critical Exposure</p>
-                )
-              }
-            />
+            {statsConfiguration.map((stat, idx) => (
+              <StatCard key={idx} {...stat} />
+            ))}
           </div>
 
           {/* Trend Chart */}
@@ -142,7 +141,7 @@ const DashboardView = ({
                     <Area yAxisId="left" type="monotone" name="Labor" dataKey="labor_cost" stroke="#6366f1" strokeWidth={3} fillOpacity={1} fill="url(#colorLabor)" hide={!visibleSeries.Labor} />
                     <Line yAxisId="right" type="monotone" name="Labor %" dataKey="labor_pct" stroke="#10b981" strokeWidth={2} dot={false} hide={!visibleSeries['Labor %']} />
                     <Tooltip 
-                      formatter={(value, name) => name === 'Labor %' ? `${parseFloat(value).toFixed(1)}%` : formatCurrency(value)}
+                            formatter={(value, name) => name === 'Labor %' ? formatPercent(value) : formatCurrency(value)}
                       contentStyle={{ 
                         backgroundColor: isDark ? '#0f172a' : '#ffffff', 
                         borderRadius: '20px', 

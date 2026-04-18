@@ -27,7 +27,17 @@ export const calculateLaborPercentage = (laborCost, netSales) => {
 };
 
 export const formatCurrency = (amount) => {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount || 0);
+  return new Intl.NumberFormat('en-US', { 
+    style: 'currency', 
+    currency: 'USD',
+    minimumFractionDigits: (amount || 0) % 1 === 0 ? 0 : 2,
+    maximumFractionDigits: 2
+  }).format(amount || 0);
+};
+
+export const formatPercent = (value) => {
+  const val = parseFloat(value) || 0;
+  return `${val.toFixed(val % 1 === 0 ? 0 : 1)}%`;
 };
 
 export const calculatePercentageChange = (current, previous) => {
