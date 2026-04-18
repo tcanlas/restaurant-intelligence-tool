@@ -55,31 +55,36 @@ const DashboardView = ({
               }
             />
             <StatCard 
-              title="Average Check"
+              title="Avg. Check"
               value={formatCurrency(calculateAverageCheck(summary.total_sales, summary.total_orders))}
               color="text-orange-500"
               icon={
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
               }
             />
-          </div>
-          
-          <StatCard 
-            title="Labor Efficiency"
-            value={`${calculateLaborPercentage(summary.total_labor, summary.total_sales).toFixed(1)}%`}
-            color={calculateLaborPercentage(summary.total_labor, summary.total_sales) > 30 ? "text-red-500" : "text-orange-500"}
-            icon={
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-            }
-            subValue={
-              <div className="flex justify-between items-center w-full">
-                <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500">Cost: {formatCurrency(summary.total_labor)}</span>
-                {calculateLaborPercentage(summary.total_labor, summary.total_sales) > 30 && (
+            <StatCard 
+              title="Labor Cost"
+              value={formatCurrency(summary.total_labor)}
+              color="text-indigo-500"
+              icon={
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              }
+              subValue={null}
+            />
+            <StatCard 
+              title="Labor Efficiency"
+              value={`${calculateLaborPercentage(summary.total_labor, summary.total_sales).toFixed(1)}%`}
+              color={calculateLaborPercentage(summary.total_labor, summary.total_sales) > 30 ? "text-red-500" : "text-orange-500"}
+              icon={
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              }
+              subValue={
+                calculateLaborPercentage(summary.total_labor, summary.total_sales) > 30 && (
                   <p className="text-[10px] text-red-600 dark:text-red-500/80 font-black animate-pulse tracking-tighter uppercase">Critical Exposure</p>
-                )}
-              </div>
-            }
-          />
+                )
+              }
+            />
+          </div>
 
           {/* Trend Chart */}
           {chartData.length > 0 && (
