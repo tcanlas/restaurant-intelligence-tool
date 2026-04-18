@@ -83,15 +83,15 @@ const IngestionForm = ({ onCommit }) => {
             <p className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest border-b border-slate-100 dark:border-white/5 pb-1">Financials</p>
             <div className="space-y-1.5">
               <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Net Sales ($)</label>
-              <input type="number" name="netSales" value={entryData.netSales} onChange={handleInputChange} placeholder="0.00" className="w-full bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-orange-500/50 transition-all dark:text-white" />
+              <input type="number" name="netSales" value={entryData.netSales} onChange={handleInputChange} placeholder="0.00" className="w-full bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-orange-500/50 transition-all text-slate-900 dark:text-white" />
             </div>
             <div className="space-y-1.5">
               <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Total Covers</label>
-              <input type="number" name="totalCovers" value={entryData.totalCovers} onChange={handleInputChange} placeholder="0" className="w-full bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-orange-500/50 transition-all dark:text-white" />
+              <input type="number" name="totalCovers" value={entryData.totalCovers} onChange={handleInputChange} placeholder="0" className="w-full bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-orange-500/50 transition-all text-slate-900 dark:text-white" />
             </div>
             <div className="space-y-1.5">
               <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Avg Check (Derived)</label>
-              <div className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm text-slate-400 dark:text-slate-500 font-bold">
+              <div className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm text-slate-500 dark:text-slate-400 font-bold">
                 {formatCurrency(calculateAverageCheck(entryData.netSales, entryData.totalCovers))}
               </div>
             </div>
@@ -102,15 +102,15 @@ const IngestionForm = ({ onCommit }) => {
             <p className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest border-b border-slate-100 dark:border-white/5 pb-1">Operations</p>
             <div className="space-y-1.5">
               <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Labor Cost ($)</label>
-              <input type="number" name="laborCost" value={entryData.laborCost} onChange={handleInputChange} placeholder="0.00" className="w-full bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-orange-500/50 transition-all dark:text-white" />
+              <input type="number" name="laborCost" value={entryData.laborCost} onChange={handleInputChange} placeholder="0.00" className="w-full bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-orange-500/50 transition-all text-slate-900 dark:text-white" />
             </div>
             <div className="space-y-1.5">
               <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Labor Hours</label>
-              <input type="number" name="laborHours" value={entryData.laborHours} onChange={handleInputChange} placeholder="0.0" className="w-full bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-orange-500/50 transition-all dark:text-white" />
+              <input type="number" name="laborHours" value={entryData.laborHours} onChange={handleInputChange} placeholder="0.0" className="w-full bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-orange-500/50 transition-all text-slate-900 dark:text-white" />
             </div>
             <div className="space-y-1.5">
               <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Event Intensity (1-5)</label>
-              <input type="number" name="eventIntensity" min="1" max="5" value={entryData.eventIntensity} onChange={handleInputChange} className="w-full bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-orange-500/50 transition-all dark:text-white" />
+              <input type="number" name="eventIntensity" min="1" max="5" value={entryData.eventIntensity} onChange={handleInputChange} className="w-full bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-orange-500/50 transition-all text-slate-900 dark:text-white" />
             </div>
           </div>
 
@@ -120,17 +120,17 @@ const IngestionForm = ({ onCommit }) => {
             <div className="grid grid-cols-3 gap-6">
               <div className="space-y-1.5">
                 <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Reservations</label>
-                <input type="number" name="reservations" value={entryData.reservations} onChange={handleInputChange} placeholder="0" className="w-full bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-orange-500/50 transition-all dark:text-white" />
+                <input type="number" name="reservations" value={entryData.reservations} onChange={handleInputChange} placeholder="0" className="w-full bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-orange-500/50 transition-all text-slate-900 dark:text-white" />
               </div>
               <div className="space-y-1.5">
                 <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Walk-ins</label>
-                <div className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm text-slate-400 dark:text-slate-500 font-bold">
+                <div className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm text-slate-500 dark:text-slate-400 font-bold">
                   {calculateWalkins(entryData.totalCovers, entryData.reservations)}
                 </div>
               </div>
               <div className="space-y-1.5">
                 <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Efficiency (SPLH)</label>
-                <div className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm text-slate-400 dark:text-slate-500 font-bold">
+                <div className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm text-slate-500 dark:text-slate-400 font-bold">
                   {formatCurrency(calculateSPLH(entryData.netSales, entryData.laborHours))}
                 </div>
               </div>

@@ -34,8 +34,9 @@ function App() {
 
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#050505] text-slate-900 dark:text-slate-200 p-6 pb-24 font-sans selection:bg-orange-500/30 transition-all duration-700">
-      <div className="max-w-md mx-auto space-y-4">
+    <div className={isDark ? "dark" : ""}>
+      <div className="min-h-screen bg-slate-50 dark:bg-[#050505] text-slate-900 dark:text-slate-200 p-6 pb-24 font-sans selection:bg-orange-500/30 transition-all duration-700">
+        <div className="max-w-md mx-auto space-y-4">
         <Navigation 
           activeTab={activeTab} 
           setActiveTab={setActiveTab} 

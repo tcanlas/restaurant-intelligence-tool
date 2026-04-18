@@ -20,11 +20,11 @@ const Navigation = ({ activeTab, setActiveTab, isDark, setIsDark, onRefresh, loa
             className="p-3 bg-white/80 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10 rounded-2xl shadow-xl border border-slate-200 dark:border-white/10 active:scale-95 transition-all group backdrop-blur-md flex items-center justify-center"
           >
             <div className="flex items-center space-x-1.5 text-slate-400">
-              <svg className={`w-4 h-4 ${!isDark ? 'text-orange-500' : 'opacity-40'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 text-orange-500 dark:text-slate-400/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-11.314l.707.707m11.314 11.314l.707.707M12 8a4 4 0 100 8 4 4 0 000-8z" />
               </svg>
               <span className="text-[10px] font-bold opacity-20">/</span>
-              <svg className={`w-4 h-4 ${isDark ? 'text-blue-400' : 'opacity-40'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 text-slate-400/40 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
               </svg>
             </div>
