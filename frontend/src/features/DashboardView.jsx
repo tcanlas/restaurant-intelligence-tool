@@ -5,7 +5,8 @@ import StatCard from '../components/ui/StatCard';
 import { 
   formatCurrency, 
   calculateAverageCheck, 
-  calculateLaborPercentage 
+  calculateLaborPercentage,
+  calculatePercentageChange
 } from '../utils/analytics';
 
 const DashboardView = ({ 
@@ -31,6 +32,28 @@ const DashboardView = ({
     return <span className={visibleSeries[value] ? 'text-slate-700 dark:text-slate-300 font-bold text-[10px] uppercase tracking-wider' : 'text-slate-300 dark:text-slate-600 text-[10px] uppercase tracking-wider'}>{value}</span>;
   };
 
+  const renderTrend = (current, previous, invertColor = false) => {
+    const change = calculatePercentageChange(current, previous);
+    if (change === 0) return null;
+    
+    const isPositive = change > 0;
+    // For Labor %, "Positive" change is actually "Negative" performance
+    const isGood = invertColor ? !isPositive : isPositive;
+    
+    const colorClass = isGood 
+      ? "text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border-emerald-500/20" 
+      : "text-red-600 dark:text-red-400 bg-red-500/10 border-red-500/20";
+
+    return (
+      <span className={`${colorClass} px-2 py-0.5 rounded-full border text-[10px] font-bold inline-flex items-center`}>
+        {isPositive ? '↑' : '↓'} {Math.abs(change).toFixed(1)}%
+      </span>
+    );
+  };
+
+  const latest = chartData[chartData.length - 1];
+  const prev = chartData[chartData.length - 2];
+
   return (
     <div className="space-y-4 animate-in fade-in slide-in-from-left-4 duration-500">
       {/* Predictive Heat Map */}
@@ -50,9 +73,7 @@ const DashboardView = ({
               icon={
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
               }
-              subValue={
-                <span className="bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold">↑ 12% LW</span>
-              }
+              subValue={renderTrend(latest?.net_sales, prev?.net_sales)}
             />
             <StatCard 
               title="Avg. Check"
@@ -61,6 +82,7 @@ const DashboardView = ({
               icon={
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
               }
+              subValue={renderTrend(calculateAverageCheck(latest?.net_sales, latest?.order_count), calculateAverageCheck(prev?.net_sales, prev?.order_count))}
             />
             <StatCard 
               title="Labor Cost"
@@ -69,7 +91,7 @@ const DashboardView = ({
               icon={
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
               }
-              subValue={null}
+              subValue={renderTrend(latest?.labor_cost, prev?.labor_cost, true)}
             />
             <StatCard 
               title="Labor Efficiency"

@@ -30,6 +30,11 @@ export const formatCurrency = (amount) => {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount || 0);
 };
 
+export const calculatePercentageChange = (current, previous) => {
+  if (!previous || previous === 0) return 0;
+  return ((current - previous) / previous) * 100;
+};
+
 export const calculateBaselinesFromRaw = (historicalData) => {
   const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
   const result = {};
