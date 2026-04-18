@@ -3,7 +3,7 @@ import React from 'react';
 const StatCard = ({ title, value, icon, color, trend, subValue, loading }) => {
   // Logic to determine trend intent
   const isPositive = typeof trend === 'number' ? trend > 0 : trend?.startsWith('+');
-  const isNegative = typeof trend === 'number' ? trend === '-' || trend?.startsWith('-');
+  const isNegative = typeof trend === 'number' ? trend < 0 : trend?.startsWith('-');
   
   const trendColor = isPositive 
     ? "text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border-emerald-500/20" 
