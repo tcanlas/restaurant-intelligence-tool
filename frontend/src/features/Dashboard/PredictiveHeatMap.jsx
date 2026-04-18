@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import predictionData from '../../predictionData.json';
+import { PREDICTION_MODIFIERS, OPERATIONAL_CONFIG } from '../../config/constants';
 
-const PredictiveHeatMap = ({ baselines = {}, eventHour = 19, rawHistory = [] }) => {
+const PredictiveHeatMap = ({ baselines = {}, eventHour = OPERATIONAL_CONFIG.DEFAULT_EVENT_HOUR, rawHistory = [] }) => {
   const [weather, setWeather] = useState('Sunny');
   const [selectedDay, setSelectedDay] = useState('Monday');
   const [eventLevel, setEventLevel] = useState(0);
@@ -16,12 +17,12 @@ const PredictiveHeatMap = ({ baselines = {}, eventHour = 19, rawHistory = [] }) 
     let walkIn = avgWalkIn;
 
     if (weather === 'Rainy') {
-      walkIn = type === 'Patio' ? walkIn * 0.2 : walkIn * 0.7;
-      res *= 0.95;
+      walkIn = type === 'Patio' ? walkIn * PREDICTION_MODIFIERS.RAIN_PATIO : walkIn * PREDICTION_MODIFIERS.RAIN_WALKINS;
+      res *= PREDICTION_MODIFIERS.RAIN_RESERVATIONS;
     }
 
     if (hour === eventHour - 1 || hour === eventHour - 2) {
-      walkIn += (eventLevel * 5);
+      walkIn += (eventLevel * OPERATIONAL_CONFIG.INTENSITY_MODIFIER);
     }
 
     const totalCovers = res + walkIn;
