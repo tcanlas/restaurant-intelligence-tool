@@ -643,21 +643,6 @@ export default defineConfig({
 })
 </file>
 
-<file path="package.json">
-{
-  "name": "toast-dashboard-root",
-  "version": "1.0.0",
-  "private": true,
-  "scripts": {
-    "dev": "concurrently \"npm run dev --prefix backend\" \"npm run dev --prefix frontend\"",
-    "install-all": "npm install --prefix backend && npm install --prefix frontend"
-  },
-  "devDependencies": {
-    "concurrently": "^8.2.2"
-  }
-}
-</file>
-
 <file path="repomix-instruction.md">
 # Repository Instructions
 - Always use Tailwind CSS for styling.
@@ -671,179 +656,6 @@ node_modules
 dist
 .env
 repomix-output.xml
-</file>
-
-<file path="frontend/src/features/Dashboard/PredictiveHeatMap.jsx">
-import React, { useState } from 'react';
-import predictionData from '../../predictionData.json';
-import { PREDICTION_MODIFIERS, OPERATIONAL_CONFIG } from '../../config/constants';
-
-const PredictiveHeatMap = ({ baselines = {}, eventHour = OPERATIONAL_CONFIG.DEFAULT_EVENT_HOUR, rawHistory = [] }) => {
-  const [weather, setWeather] = useState('Sunny');
-  const [selectedDay, setSelectedDay] = useState('Monday');
-  const [eventLevel, setEventLevel] = useState(0);
-  const [activeCell, setActiveCell] = useState(null);
-  const dayBaseline = baselines[selectedDay] || { res: Array(24).fill(0), walkIn: Array(24).fill(0) };
-
-  const hours = Array.from({ length: 24 }, (_, i) => i);
-
-  // Prediction Engine
-  const predictTraffic = (hour, avgRes, avgWalkIn, type) => {
-    let res = avgRes;
-    let walkIn = avgWalkIn;
-
-    if (weather === 'Rainy') {
-      walkIn = type === 'Patio' ? walkIn * PREDICTION_MODIFIERS.RAIN_PATIO : walkIn * PREDICTION_MODIFIERS.RAIN_WALKINS;
-      res *= PREDICTION_MODIFIERS.RAIN_RESERVATIONS;
-    }
-
-    if (hour === eventHour - 1 || hour === eventHour - 2) {
-      walkIn += (eventLevel * OPERATIONAL_CONFIG.INTENSITY_MODIFIER);
-    }
-
-    const totalCovers = res + walkIn;
-    return Math.min(100, (totalCovers / predictionData.totalSeats) * 100);
-  };
-
-  const getPeakHeat = () => {
-    const diningHeats = hours.map(h => predictTraffic(h, dayBaseline.res[h], dayBaseline.walkIn[h], 'Dining Room'));
-    const patioHeats = hours.map(h => predictTraffic(h, dayBaseline.res[h], dayBaseline.walkIn[h], 'Patio'));
-    return Math.max(...diningHeats, ...patioHeats);
-  };
-  const peak = getPeakHeat();
-  
-  const getHistoricalInsights = (hour) => {
-    return rawHistory
-      .filter(d => d.day === selectedDay && d.hour === hour)
-      .sort((a, b) => new Date(b.date) - new Date(a.date))
-      .slice(0, 3);
-  };
-
-  const getColor = (val) => {
-    if (val < 10) return 'bg-slate-100 dark:bg-black';
-    if (val < 30) return 'bg-orange-100 dark:bg-orange-900/40';
-    if (val < 50) return 'bg-orange-300 dark:bg-orange-600/60';
-    if (val < 80) return 'bg-orange-500 dark:bg-orange-500/90';
-    return 'bg-red-500 dark:bg-red-600';
-  };
-
-  return (
-    <div className="bg-white dark:bg-white/5 backdrop-blur-xl p-8 rounded-[2.5rem] shadow-2xl border border-slate-200 dark:border-white/10 space-y-8 relative overflow-hidden transition-all duration-500">
-      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-orange-500/50 to-transparent" />
-      <div className="flex justify-between items-end">
-        <div>
-          <h3 className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-1">Predictive Engine</h3>
-          <p className="text-lg font-black text-slate-900 dark:text-white tracking-tight">Demand Forecast</p>
-        </div>
-        <select 
-          value={selectedDay}
-          onChange={(e) => setSelectedDay(e.target.value)}
-          className="bg-white/50 dark:bg-slate-900 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-[10px] font-bold rounded-xl px-3 py-1.5 outline-none focus:ring-2 focus:ring-orange-500/50 transition-all cursor-pointer"
-        >
-          <option value="Monday" className="dark:bg-slate-900">Monday</option>
-          <option value="Tuesday" className="dark:bg-slate-900">Tuesday</option>
-          <option value="Wednesday" className="dark:bg-slate-900">Wednesday</option>
-          <option value="Thursday" className="dark:bg-slate-900">Thursday</option>
-          <option value="Friday" className="dark:bg-slate-900">Friday</option>
-          <option value="Saturday" className="dark:bg-slate-900">Saturday</option>
-          <option value="Sunday" className="dark:bg-slate-900">Sunday</option>
-        </select>
-        <div className="flex bg-slate-200/50 dark:bg-black/40 p-1 rounded-xl border border-slate-300 dark:border-white/5">
-          {['Sunny', 'Rainy'].map((w) => (
-            <button
-              key={w}
-              onClick={() => setWeather(w)}
-              className={`px-4 py-1.5 text-[10px] font-bold rounded-lg transition-all duration-300 ${weather === w ? 'bg-white dark:bg-white/10 text-orange-600 dark:text-orange-400 shadow-lg ring-1 ring-black/5 dark:ring-white/10' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'}`}
-            >
-              {w}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="space-y-4 relative">
-        {['Dining Room', 'Patio'].map((zone) => (
-          <div key={zone}>
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-[9px] font-black uppercase text-slate-500 dark:text-slate-400 tracking-widest">{zone}</span>
-              <span className="text-[9px] text-slate-400 dark:text-slate-600">24H Dynamics</span>
-            </div>
-            <div className="grid grid-cols-24 gap-1 h-8" onMouseLeave={() => setActiveCell(null)}>
-              {hours.map((h) => {
-                const val = predictTraffic(h, dayBaseline.res[h], dayBaseline.walkIn[h], zone);
-                const displayHour = h === 0 ? '12am' : h === 12 ? '12pm' : h > 12 ? `${h - 12}pm` : `${h}am`;
-                const isHovered = activeCell?.hour === h && activeCell?.zone === zone;
-
-                return (
-                  <div
-                    key={h}
-                    onMouseEnter={(e) => setActiveCell({ hour: h, zone, val, displayHour })}
-                    onClick={() => setActiveCell({ hour: h, zone, val, displayHour })}
-                    className={`h-full rounded-[3px] border border-black/5 dark:border-white/5 transition-all duration-700 cursor-crosshair ${getColor(val)} ${isHovered ? 'ring-2 ring-orange-500 dark:ring-white/50 scale-110 z-10 shadow-xl' : ''}`}
-                  />
-                );
-              })}
-            </div>
-          </div>
-        ))}
-
-        {activeCell && (
-          <div className="absolute z-50 -top-16 left-0 right-0 mx-auto w-52 bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl text-slate-900 dark:text-white p-4 rounded-3xl border border-slate-200 dark:border-white/20 shadow-2xl pointer-events-none animate-in fade-in zoom-in slide-in-from-bottom-2 duration-300">
-            <div className="flex justify-between items-start mb-2">
-              <div>
-                <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase">{activeCell.displayHour} • {activeCell.zone}</p>
-                <p className="text-xl font-black text-orange-600 dark:text-orange-400">{activeCell.val.toFixed(0)}% <span className="text-[10px] text-slate-400 font-normal">capacity</span></p>
-              </div>
-            </div>
-            
-            <div className="space-y-1.5 border-t border-gray-800 pt-2">
-              <p className="text-[8px] font-bold text-gray-500 uppercase tracking-tighter">Past 3 {selectedDay}s (Covers)</p>
-              <div className="flex justify-between items-center">
-                {getHistoricalInsights(activeCell.hour).map((entry, i) => (
-                  <div key={i} className="text-center border-x border-gray-800 px-2 first:border-l-0 last:border-r-0">
-                    <div className="flex flex-col">
-                      <span className="text-[9px] font-bold text-orange-400">{entry.res_covers || 0}R</span>
-                      <span className="text-[9px] font-bold text-blue-400">{entry.walk_in_covers || 0}W</span>
-                    </div>
-                    <p className="text-[7px] text-gray-500">{new Date(entry.date).toLocaleDateString('en-US', {month: 'numeric', day: 'numeric'})}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        <div className="flex justify-between px-1">
-          <span className="text-[8px] text-slate-400 dark:text-slate-600 font-bold">12AM</span>
-          <span className="text-[8px] text-slate-400 dark:text-slate-600 font-bold">06AM</span>
-          <span className="text-[8px] text-slate-400 dark:text-slate-600 font-bold">12PM</span>
-          <span className="text-[8px] text-slate-400 dark:text-slate-600 font-bold">06PM</span>
-          <span className="text-[8px] text-slate-400 dark:text-slate-600 font-bold">11PM</span>
-        </div>
-      </div>
-
-      <div className="pt-6 border-t border-slate-200 dark:border-white/5 flex items-center justify-between">
-        <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-tighter">
-          Event Intensity: <span className="text-orange-400 ml-1">{eventLevel === 0 ? 'Baseline' : `Level ${eventLevel}`}</span>
-        </label>
-        <input 
-          type="range" min="0" max="5" value={eventLevel} 
-          onChange={(e) => setEventLevel(parseInt(e.target.value))}
-          className="w-24 accent-orange-600"
-        />
-      </div>
-
-      <div className={`mt-6 p-4 rounded-2xl text-[11px] font-medium border backdrop-blur-md transition-colors duration-500 ${peak > 80 ? 'bg-red-500/5 dark:bg-red-500/10 border-red-500/20 text-red-700 dark:text-red-200' : 'bg-emerald-500/5 dark:bg-emerald-500/10 border-emerald-500/20 text-emerald-700 dark:text-emerald-200'}`}>
-        <span className="uppercase tracking-[0.2em] font-black block mb-2 opacity-50">Maestro's Directive</span>
-        {peak > 80 
-          ? "Critical volume anticipated. Deploy senior floor lead; initiate kitchen prep sequence by 17:00." 
-          : "Flow stabilized. Optimal window for deep-sanitization protocols or specialized staff workshops."}
-      </div>
-    </div>
-  );
-};
-
-export default PredictiveHeatMap;
 </file>
 
 <file path="frontend/src/hooks/useVaultData.js">
@@ -957,6 +769,24 @@ export default {
     },
   },
   plugins: [],
+}
+</file>
+
+<file path="package.json">
+{
+  "name": "toast-dashboard-root",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm run dev --prefix backend\" \"npm run dev --prefix frontend\"",
+    "install-all": "npm install --prefix backend && npm install --prefix frontend"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "dependencies": {
+    "lucide-react": "^1.8.0"
+  }
 }
 </file>
 
@@ -1149,6 +979,189 @@ const Navigation = ({ activeTab, setActiveTab, isDark, setIsDark, onRefresh, loa
 export default Navigation;
 </file>
 
+<file path="frontend/src/features/Dashboard/PredictiveHeatMap.jsx">
+import React, { useState } from 'react';
+import predictionData from '../../predictionData.json';
+import { calculateBaselinesFromRaw } from '../../utils/analytics';
+import { PREDICTION_MODIFIERS, OPERATIONAL_CONFIG } from '../../config/constants';
+
+const PredictiveHeatMap = ({ history = [], currentConditions = {} }) => {
+  const eventHour = currentConditions.eventHour || OPERATIONAL_CONFIG.DEFAULT_EVENT_HOUR;
+
+  const [weather, setWeather] = useState('Sunny');
+  const [selectedDay, setSelectedDay] = useState('Monday');
+  const [eventLevel, setEventLevel] = useState(0);
+  const [activeCell, setActiveCell] = useState(null);
+
+  // Internal logic: Merge static JSON baselines with dynamic Vault history
+  const baselines = {
+    ...predictionData.baselines,
+    ...calculateBaselinesFromRaw(history)
+  };
+
+  const dayBaseline = baselines[selectedDay] || { res: Array(24).fill(0), walkIn: Array(24).fill(0) };
+
+  const hours = Array.from({ length: 24 }, (_, i) => i);
+
+  // Prediction Engine
+  const predictTraffic = (hour, avgRes, avgWalkIn, type) => {
+    let res = avgRes;
+    let walkIn = avgWalkIn;
+
+    if (weather === 'Rainy') {
+      walkIn = type === 'Patio' ? walkIn * PREDICTION_MODIFIERS.RAIN_PATIO : walkIn * PREDICTION_MODIFIERS.RAIN_WALKINS;
+      res *= PREDICTION_MODIFIERS.RAIN_RESERVATIONS;
+    }
+
+    if (hour === eventHour - 1 || hour === eventHour - 2) {
+      walkIn += (eventLevel * OPERATIONAL_CONFIG.INTENSITY_MODIFIER);
+    }
+
+    const totalCovers = res + walkIn;
+    return Math.min(100, (totalCovers / predictionData.totalSeats) * 100);
+  };
+
+  const getPeakHeat = () => {
+    const diningHeats = hours.map(h => predictTraffic(h, dayBaseline.res[h], dayBaseline.walkIn[h], 'Dining Room'));
+    const patioHeats = hours.map(h => predictTraffic(h, dayBaseline.res[h], dayBaseline.walkIn[h], 'Patio'));
+    return Math.max(...diningHeats, ...patioHeats);
+  };
+  const peak = getPeakHeat();
+  
+  const getHistoricalInsights = (hour) => {
+    return history
+      .filter(d => d.day === selectedDay && d.hour === hour)
+      .sort((a, b) => new Date(b.date) - new Date(a.date))
+      .slice(0, 3);
+  };
+
+  const getColor = (val) => {
+    if (val < 10) return 'bg-slate-100 dark:bg-black';
+    if (val < 30) return 'bg-orange-100 dark:bg-orange-900/40';
+    if (val < 50) return 'bg-orange-300 dark:bg-orange-600/60';
+    if (val < 80) return 'bg-orange-500 dark:bg-orange-500/90';
+    return 'bg-red-500 dark:bg-red-600';
+  };
+
+  return (
+    <div className="bg-white dark:bg-white/5 backdrop-blur-xl p-8 rounded-[2.5rem] shadow-2xl border border-slate-200 dark:border-white/10 space-y-8 relative overflow-hidden transition-all duration-500">
+      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-orange-500/50 to-transparent" />
+      <div className="flex justify-between items-end">
+        <div>
+          <h3 className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-1">Predictive Engine</h3>
+          <p className="text-lg font-black text-slate-900 dark:text-white tracking-tight">Demand Forecast</p>
+        </div>
+        <select 
+          value={selectedDay}
+          onChange={(e) => setSelectedDay(e.target.value)}
+          className="bg-white/50 dark:bg-slate-900 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-[10px] font-bold rounded-xl px-3 py-1.5 outline-none focus:ring-2 focus:ring-orange-500/50 transition-all cursor-pointer"
+        >
+          <option value="Monday" className="dark:bg-slate-900">Monday</option>
+          <option value="Tuesday" className="dark:bg-slate-900">Tuesday</option>
+          <option value="Wednesday" className="dark:bg-slate-900">Wednesday</option>
+          <option value="Thursday" className="dark:bg-slate-900">Thursday</option>
+          <option value="Friday" className="dark:bg-slate-900">Friday</option>
+          <option value="Saturday" className="dark:bg-slate-900">Saturday</option>
+          <option value="Sunday" className="dark:bg-slate-900">Sunday</option>
+        </select>
+        <div className="flex bg-slate-200/50 dark:bg-black/40 p-1 rounded-xl border border-slate-300 dark:border-white/5">
+          {['Sunny', 'Rainy'].map((w) => (
+            <button
+              key={w}
+              onClick={() => setWeather(w)}
+              className={`px-4 py-1.5 text-[10px] font-bold rounded-lg transition-all duration-300 ${weather === w ? 'bg-white dark:bg-white/10 text-orange-600 dark:text-orange-400 shadow-lg ring-1 ring-black/5 dark:ring-white/10' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'}`}
+            >
+              {w}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="space-y-4 relative">
+        {['Dining Room', 'Patio'].map((zone) => (
+          <div key={zone}>
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-[9px] font-black uppercase text-slate-500 dark:text-slate-400 tracking-widest">{zone}</span>
+              <span className="text-[9px] text-slate-400 dark:text-slate-600">24H Dynamics</span>
+            </div>
+            <div className="grid grid-cols-24 gap-1 h-8" onMouseLeave={() => setActiveCell(null)}>
+              {hours.map((h) => {
+                const val = predictTraffic(h, dayBaseline.res[h], dayBaseline.walkIn[h], zone);
+                const displayHour = h === 0 ? '12am' : h === 12 ? '12pm' : h > 12 ? `${h - 12}pm` : `${h}am`;
+                const isHovered = activeCell?.hour === h && activeCell?.zone === zone;
+
+                return (
+                  <div
+                    key={h}
+                    onMouseEnter={(e) => setActiveCell({ hour: h, zone, val, displayHour })}
+                    onClick={() => setActiveCell({ hour: h, zone, val, displayHour })}
+                    className={`h-full rounded-[3px] border border-black/5 dark:border-white/5 transition-all duration-700 cursor-crosshair ${getColor(val)} ${isHovered ? 'ring-2 ring-orange-500 dark:ring-white/50 scale-110 z-10 shadow-xl' : ''}`}
+                  />
+                );
+              })}
+            </div>
+          </div>
+        ))}
+
+        {activeCell && (
+          <div className="absolute z-50 -top-16 left-0 right-0 mx-auto w-52 bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl text-slate-900 dark:text-white p-4 rounded-3xl border border-slate-200 dark:border-white/20 shadow-2xl pointer-events-none animate-in fade-in zoom-in slide-in-from-bottom-2 duration-300">
+            <div className="flex justify-between items-start mb-2">
+              <div>
+                <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase">{activeCell.displayHour} • {activeCell.zone}</p>
+                <p className="text-xl font-black text-orange-600 dark:text-orange-400">{activeCell.val.toFixed(0)}% <span className="text-[10px] text-slate-400 font-normal">capacity</span></p>
+              </div>
+            </div>
+            
+            <div className="space-y-1.5 border-t border-gray-800 pt-2">
+              <p className="text-[8px] font-bold text-gray-500 uppercase tracking-tighter">Past 3 {selectedDay}s (Covers)</p>
+              <div className="flex justify-between items-center">
+                {getHistoricalInsights(activeCell.hour).map((entry, i) => (
+                  <div key={i} className="text-center border-x border-gray-800 px-2 first:border-l-0 last:border-r-0">
+                    <div className="flex flex-col">
+                      <span className="text-[9px] font-bold text-orange-400">{entry.res_covers || 0}R</span>
+                      <span className="text-[9px] font-bold text-blue-400">{entry.walk_in_covers || 0}W</span>
+                    </div>
+                    <p className="text-[7px] text-gray-500">{new Date(entry.date).toLocaleDateString('en-US', {month: 'numeric', day: 'numeric'})}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="flex justify-between px-1">
+          <span className="text-[8px] text-slate-400 dark:text-slate-600 font-bold">12AM</span>
+          <span className="text-[8px] text-slate-400 dark:text-slate-600 font-bold">06AM</span>
+          <span className="text-[8px] text-slate-400 dark:text-slate-600 font-bold">12PM</span>
+          <span className="text-[8px] text-slate-400 dark:text-slate-600 font-bold">06PM</span>
+          <span className="text-[8px] text-slate-400 dark:text-slate-600 font-bold">11PM</span>
+        </div>
+      </div>
+
+      <div className="pt-6 border-t border-slate-200 dark:border-white/5 flex items-center justify-between">
+        <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-tighter">
+          Event Intensity: <span className="text-orange-400 ml-1">{eventLevel === 0 ? 'Baseline' : `Level ${eventLevel}`}</span>
+        </label>
+        <input 
+          type="range" min="0" max="5" value={eventLevel} 
+          onChange={(e) => setEventLevel(parseInt(e.target.value))}
+          className="w-24 accent-orange-600"
+        />
+      </div>
+
+      <div className={`mt-6 p-4 rounded-2xl text-[11px] font-medium border backdrop-blur-md transition-colors duration-500 ${peak > 80 ? 'bg-red-500/5 dark:bg-red-500/10 border-red-500/20 text-red-700 dark:text-red-200' : 'bg-emerald-500/5 dark:bg-emerald-500/10 border-emerald-500/20 text-emerald-700 dark:text-emerald-200'}`}>
+        <span className="uppercase tracking-[0.2em] font-black block mb-2 opacity-50">Maestro's Directive</span>
+        {peak > 80 
+          ? "Critical volume anticipated. Deploy senior floor lead; initiate kitchen prep sequence by 17:00." 
+          : "Flow stabilized. Optimal window for deep-sanitization protocols or specialized staff workshops."}
+      </div>
+    </div>
+  );
+};
+
+export default PredictiveHeatMap;
+</file>
+
 <file path="frontend/src/components/SalesOverview.jsx">
 import React from 'react';
 
@@ -1208,6 +1221,19 @@ export default SalesOverview;
 <file path="frontend/src/components/ui/StatCard.jsx">
 import React from 'react';
 
+/**
+ * StatCard - A reusable glassmorphic tile for displaying operational metrics.
+ * Supports dynamic trends, loading skeletons, and custom iconography.
+ * 
+ * @param {Object} props
+ * @param {string} props.title - The metric label (e.g., "Net Sales").
+ * @param {string|number} props.value - The primary value to display.
+ * @param {React.ReactNode} props.icon - SVG icon component.
+ * @param {string} props.color - Tailwind text color class for the icon (e.g., "text-orange-500").
+ * @param {string} [props.trend] - Optional trend string (e.g., "+12%").
+ * @param {React.ReactNode} [props.subValue] - Optional secondary text or badges.
+ * @param {boolean} [props.loading] - If true, displays an animated pulse skeleton.
+ */
 const StatCard = ({ title, value, icon, color, trend, subValue, loading }) => {
   // Logic to determine trend intent
   const isPositive = typeof trend === 'number' ? trend > 0 : trend?.startsWith('+');
@@ -1267,6 +1293,13 @@ import {
   formatCurrency
 } from '../../utils/analytics';
 
+/**
+ * IngestionForm - A dedicated view for manual operational data entry.
+ * Handles local state for daily financials, labor, and volume records.
+ * 
+ * @param {Object} props
+ * @param {function(Object): Promise<boolean>} props.onCommit - Callback to save the entry. Returns true on success.
+ */
 const IngestionForm = ({ onCommit }) => {
   const dateInputRef = useRef(null);
 
@@ -1280,15 +1313,23 @@ const IngestionForm = ({ onCommit }) => {
     reservations: '',
     eventIntensity: '1',
   });
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setEntryData(prev => ({ ...prev, [name]: value }));
   };
 
+  const isFormValid = [
+    'netSales', 'laborCost', 'laborHours', 'totalCovers', 'reservations', 'eventIntensity'
+  ].every(field => entryData[field] !== '' && !isNaN(parseFloat(entryData[field])));
+
   const handleSubmit = async () => {
+    if (!isFormValid) return;
     const success = await onCommit(entryData);
     if (success) {
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 3000);
       setEntryData({
         date: new Date().toISOString().split('T')[0],
         netSales: '',
@@ -1399,8 +1440,22 @@ const IngestionForm = ({ onCommit }) => {
           </div>
         </div>
 
-        <button onClick={handleSubmit} className="w-full bg-orange-600 hover:bg-orange-500 text-white font-black py-4 rounded-2xl shadow-xl shadow-orange-600/20 transition-all active:scale-[0.98] text-[10px] uppercase tracking-[0.3em]">
-          Commit Data to Vault
+        {showSuccess && (
+          <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold text-center animate-in fade-in slide-in-from-top-2 uppercase tracking-widest">
+            Intelligence Synced Successfully
+          </div>
+        )}
+
+        <button 
+          onClick={handleSubmit} 
+          disabled={!isFormValid}
+          className={`w-full font-black py-4 rounded-2xl shadow-xl transition-all active:scale-[0.98] text-[10px] uppercase tracking-[0.3em] ${
+            isFormValid 
+              ? 'bg-orange-600 hover:bg-orange-500 text-white shadow-orange-600/20' 
+              : 'bg-slate-200 dark:bg-white/5 text-slate-400 dark:text-slate-600 cursor-not-allowed border border-slate-200 dark:border-white/10'
+          }`}
+        >
+          {isFormValid ? 'Commit Data to Vault' : 'Complete Required Fields'}
         </button>
       </div>
     </div>
@@ -1424,19 +1479,22 @@ export const calculateWalkins = (total, reservations) => {
 export const calculateSPLH = (sales, laborHours) => {
   const s = parseFloat(sales) || 0;
   const h = parseFloat(laborHours) || 0;
-  return h > 0 ? s / h : 0;
+  const result = h > 0 ? s / h : 0;
+  return isFinite(result) ? result : 0;
 };
 
 export const calculateAverageCheck = (sales, totalGuests) => {
   const s = parseFloat(sales) || 0;
   const g = parseInt(totalGuests) || 0;
-  return g > 0 ? s / g : 0;
+  const result = g > 0 ? s / g : 0;
+  return isFinite(result) ? result : 0;
 };
 
 export const calculateLaborPercentage = (laborCost, netSales) => {
   const l = parseFloat(laborCost) || 0;
   const s = parseFloat(netSales) || 0;
-  return s > 0 ? (l / s) * 100 : 0;
+  const result = s > 0 ? (l / s) * 100 : 0;
+  return isFinite(result) ? result : 0;
 };
 
 export const formatCurrency = (amount) => {
@@ -1458,13 +1516,13 @@ export const formatPercent = (value) => {
 };
 
 export const calculatePercentageChange = (current, previous) => {
-  if (!previous || previous === 0) return 0;
+  if (!previous || previous === 0 || isNaN(current) || isNaN(previous)) return 0;
   return ((current - previous) / previous) * 100;
 };
 
 export const formatTrend = (current, previous) => {
   const change = calculatePercentageChange(current, previous);
-  if (change === 0) return null;
+  if (change === 0 || !isFinite(change)) return null;
   return `${change > 0 ? '+' : ''}${formatPercent(change)}`;
 };
 
@@ -1492,6 +1550,7 @@ export const calculateBaselinesFromRaw = (historicalData) => {
 
 <file path="frontend/src/features/DashboardView.jsx">
 import React from 'react';
+import { TrendingUp, DollarSign, Users, Activity } from 'lucide-react';
 import PredictiveHeatMap from './Dashboard/PredictiveHeatMap';
 import VelocityChart from './Dashboard/VelocityChart';
 import StatCard from '../components/ui/StatCard';
@@ -1501,17 +1560,26 @@ import {
   calculateAverageCheck, 
   calculateLaborPercentage,
   calculatePercentageChange,
-  formatNumber,
   formatTrend
 } from '../utils/analytics';
 import { OPERATIONAL_CONFIG } from '../config/constants';
 
+/**
+ * DashboardView - The primary visual intelligence layer of the application.
+ * Orchestrates the Predictive Engine, Stats Grid, and Velocity Charts.
+ * 
+ * @param {Object} props
+ * @param {Object} props.summary - Aggregated summary object (total_sales, total_labor, etc).
+ * @param {Array<Object>} props.chartData - Array of daily sales records for the chart.
+ * @param {boolean} props.isDark - Global theme state.
+ * @param {boolean} props.loading - Data synchronization state.
+ * @param {Array<Object>} props.hourlyHistoricalData - Raw historical cover records.
+ */
 const DashboardView = ({ 
   summary, 
   chartData, 
   isDark, 
   loading, 
-  mockBaselines,
   hourlyHistoricalData
 }) => {
   const latest = chartData[chartData.length - 1];
@@ -1521,31 +1589,31 @@ const DashboardView = ({
 
   const statsConfig = [
     {
-      title: "Net Sales",
+      label: "Net Sales",
       value: formatCurrency(summary.total_sales),
       color: "text-emerald-500",
-      icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>,
+      icon: <TrendingUp className="w-4 h-4" />,
       trend: formatTrend(latest?.net_sales, prev?.net_sales)
     },
     {
-      title: "Avg. Check",
+      label: "Avg. Check",
       value: formatCurrency(calculateAverageCheck(summary.total_sales, summary.total_orders)),
       color: "text-orange-500",
-      icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>,
+      icon: <DollarSign className="w-4 h-4" />,
       trend: formatTrend(calculateAverageCheck(latest?.net_sales, latest?.order_count), calculateAverageCheck(prev?.net_sales, prev?.order_count))
     },
     {
-      title: "Labor Cost",
+      label: "Labor Cost",
       value: formatCurrency(summary.total_labor),
       color: "text-indigo-500",
-      icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+      icon: <Users className="w-4 h-4" />,
       trend: formatTrend(latest?.labor_cost, prev?.labor_cost)
     },
     {
-      title: "Labor Efficiency",
+      label: "Labor Efficiency",
       value: formatPercent(laborPct),
       color: laborPct > OPERATIONAL_CONFIG.LABOR_THRESHOLD_PCT ? "text-red-500" : "text-orange-500",
-      icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+      icon: <Activity className="w-4 h-4" />,
       trend: formatTrend(latest?.labor_pct, prev?.labor_pct),
       subValue: laborPct > OPERATIONAL_CONFIG.LABOR_THRESHOLD_PCT && (
         <p className="text-[10px] text-red-600 dark:text-red-500/80 font-black animate-pulse tracking-tighter uppercase">Critical Exposure</p>
@@ -1556,13 +1624,22 @@ const DashboardView = ({
   return (
     <div className="space-y-4 animate-in fade-in slide-in-from-left-4 duration-500">
       {/* Predictive Heat Map */}
-      <PredictiveHeatMap baselines={mockBaselines} rawHistory={hourlyHistoricalData} />
+      <PredictiveHeatMap history={hourlyHistoricalData} currentConditions={{}} />
 
       {summary && !summary.error ? (
         <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {statsConfig.map((stat, idx) => (
-              <StatCard key={idx} {...stat} loading={loading} />
+              <StatCard 
+                key={idx} 
+                title={stat.label}
+                value={stat.value}
+                icon={stat.icon}
+                color={stat.color}
+                trend={stat.trend}
+                subValue={stat.subValue}
+                loading={loading} 
+              />
             ))}
           </div>
 
@@ -1587,14 +1664,11 @@ export default DashboardView;
 
 <file path="frontend/src/App.jsx">
 import { useState, useEffect } from 'react';
-import predictionData from './predictionData.json';
 import hourlyHistoricalData from './hourlyHistoricalData.json';
 import IngestionForm from './features/Ingestion/IngestionForm';
 import DashboardView from "./features/DashboardView";
 import Navigation from "./components/Navigation";
 import useVaultData from './hooks/useVaultData';
-import { calculateBaselinesFromRaw } from './utils/analytics';
-
 
 function App() {
   const [isDark, setIsDark] = useState(true);
@@ -1613,57 +1687,49 @@ function App() {
     if (isDark) document.documentElement.classList.add('dark');
     else document.documentElement.classList.remove('dark');
   }, [isDark]);
-   
-  // We combine the calculated baselines with any overrides from our static config
-  const mockBaselines = {
-    ...predictionData.baselines,
-    ...calculateBaselinesFromRaw(hourlyHistoricalData)
-  };
-
 
   return (
     <div className={isDark ? "dark" : ""}>
       <div className="min-h-screen bg-slate-50 dark:bg-[#050505] text-slate-900 dark:text-slate-200 p-6 pb-24 font-sans selection:bg-orange-500/30 transition-all duration-700">
         <div className="max-w-md mx-auto space-y-4">
-        <Navigation 
-          activeTab={activeTab} 
-          setActiveTab={setActiveTab} 
-          isDark={isDark} 
-          setIsDark={setIsDark} 
-          onRefresh={fetchData}
-          loading={loading}
-        />
-
-
-        {activeTab === 'intelligence' ? (
-          <DashboardView 
-            summary={summary}
-            chartData={chartData}
-            isDark={isDark}
+          <Navigation 
+            activeTab={activeTab} 
+            setActiveTab={setActiveTab} 
+            isDark={isDark} 
+            setIsDark={setIsDark} 
+            onRefresh={fetchData}
             loading={loading}
-            mockBaselines={mockBaselines}
-            hourlyHistoricalData={hourlyHistoricalData}
           />
-        ) : (
-          <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-500">
-            <IngestionForm onCommit={handleCommit} />
-          </div>
-        )}
 
-        {/* Bottom Status Bar */}
-        <footer className="mt-12 pt-8 border-t border-slate-200 dark:border-white/5">
-          <div className="flex items-center space-x-2">
-            <div className={`w-2 h-2 rounded-full ${status.toLowerCase().includes('running') ? 'bg-green-500' : 'bg-amber-500'}`}></div>
-            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.4em]">
-              System Status: {status}
-            </span>
-          </div>
-        </footer>
+          {activeTab === 'intelligence' ? (
+            <DashboardView 
+              summary={summary}
+              chartData={chartData}
+              isDark={isDark}
+              loading={loading}
+              hourlyHistoricalData={hourlyHistoricalData}
+            />
+          ) : (
+            <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-500">
+              <IngestionForm onCommit={handleCommit} />
+            </div>
+          )}
+
+          {/* Bottom Status Bar */}
+          <footer className="mt-12 pt-8 border-t border-slate-200 dark:border-white/5">
+            <div className="flex items-center space-x-2">
+              <div className={`w-2 h-2 rounded-full ${status?.toLowerCase().includes('connected') ? 'bg-green-500' : 'bg-amber-500'}`}></div>
+              <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.4em]">
+                System Status: {status}
+              </span>
+            </div>
+          </footer>
+        </div>
       </div>
-    </div>
     </div>
   );
 }
+
 export default App;
 </file>
 

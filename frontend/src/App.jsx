@@ -4,6 +4,7 @@ import IngestionForm from './features/Ingestion/IngestionForm';
 import DashboardView from "./features/DashboardView";
 import Navigation from "./components/Navigation";
 import useVaultData from './hooks/useVaultData';
+import ErrorBoundary from './components/ErrorBoundary';
 
 function App() {
   const [isDark, setIsDark] = useState(true);
@@ -25,6 +26,7 @@ function App() {
 
   return (
     <div className={isDark ? "dark" : ""}>
+      <ErrorBoundary>
       <div className="min-h-screen bg-slate-50 dark:bg-[#050505] text-slate-900 dark:text-slate-200 p-6 pb-24 font-sans selection:bg-orange-500/30 transition-all duration-700">
         <div className="max-w-md mx-auto space-y-4">
           <Navigation 
@@ -61,6 +63,7 @@ function App() {
           </footer>
         </div>
       </div>
+      </ErrorBoundary>
     </div>
   );
 }
