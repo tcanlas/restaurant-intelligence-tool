@@ -1,12 +1,22 @@
 import React, { useState } from 'react';
 import predictionData from '../../predictionData.json';
+import { calculateBaselinesFromRaw } from '../../utils/analytics';
 import { PREDICTION_MODIFIERS, OPERATIONAL_CONFIG } from '../../config/constants';
 
-const PredictiveHeatMap = ({ baselines = {}, eventHour = OPERATIONAL_CONFIG.DEFAULT_EVENT_HOUR, rawHistory = [] }) => {
+const PredictiveHeatMap = ({ history = [], currentConditions = {} }) => {
+  const eventHour = currentConditions.eventHour || OPERATIONAL_CONFIG.DEFAULT_EVENT_HOUR;
+
   const [weather, setWeather] = useState('Sunny');
   const [selectedDay, setSelectedDay] = useState('Monday');
   const [eventLevel, setEventLevel] = useState(0);
   const [activeCell, setActiveCell] = useState(null);
+
+  // Internal logic: Merge static JSON baselines with dynamic Vault history
+  const baselines = {
+    ...predictionData.baselines,
+    ...calculateBaselinesFromRaw(history)
+  };
+
   const dayBaseline = baselines[selectedDay] || { res: Array(24).fill(0), walkIn: Array(24).fill(0) };
 
   const hours = Array.from({ length: 24 }, (_, i) => i);
@@ -37,7 +47,7 @@ const PredictiveHeatMap = ({ baselines = {}, eventHour = OPERATIONAL_CONFIG.DEFA
   const peak = getPeakHeat();
   
   const getHistoricalInsights = (hour) => {
-    return rawHistory
+    return history
       .filter(d => d.day === selectedDay && d.hour === hour)
       .sort((a, b) => new Date(b.date) - new Date(a.date))
       .slice(0, 3);

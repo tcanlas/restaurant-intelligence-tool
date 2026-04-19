@@ -11,19 +11,22 @@ export const calculateWalkins = (total, reservations) => {
 export const calculateSPLH = (sales, laborHours) => {
   const s = parseFloat(sales) || 0;
   const h = parseFloat(laborHours) || 0;
-  return h > 0 ? s / h : 0;
+  const result = h > 0 ? s / h : 0;
+  return isFinite(result) ? result : 0;
 };
 
 export const calculateAverageCheck = (sales, totalGuests) => {
   const s = parseFloat(sales) || 0;
   const g = parseInt(totalGuests) || 0;
-  return g > 0 ? s / g : 0;
+  const result = g > 0 ? s / g : 0;
+  return isFinite(result) ? result : 0;
 };
 
 export const calculateLaborPercentage = (laborCost, netSales) => {
   const l = parseFloat(laborCost) || 0;
   const s = parseFloat(netSales) || 0;
-  return s > 0 ? (l / s) * 100 : 0;
+  const result = s > 0 ? (l / s) * 100 : 0;
+  return isFinite(result) ? result : 0;
 };
 
 export const formatCurrency = (amount) => {
@@ -45,13 +48,13 @@ export const formatPercent = (value) => {
 };
 
 export const calculatePercentageChange = (current, previous) => {
-  if (!previous || previous === 0) return 0;
+  if (!previous || previous === 0 || isNaN(current) || isNaN(previous)) return 0;
   return ((current - previous) / previous) * 100;
 };
 
 export const formatTrend = (current, previous) => {
   const change = calculatePercentageChange(current, previous);
-  if (change === 0) return null;
+  if (change === 0 || !isFinite(change)) return null;
   return `${change > 0 ? '+' : ''}${formatPercent(change)}`;
 };
 

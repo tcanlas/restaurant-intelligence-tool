@@ -6,6 +6,13 @@ import {
   formatCurrency
 } from '../../utils/analytics';
 
+/**
+ * IngestionForm - A dedicated view for manual operational data entry.
+ * Handles local state for daily financials, labor, and volume records.
+ * 
+ * @param {Object} props
+ * @param {function(Object): Promise<boolean>} props.onCommit - Callback to save the entry. Returns true on success.
+ */
 const IngestionForm = ({ onCommit }) => {
   const dateInputRef = useRef(null);
 
@@ -19,15 +26,23 @@ const IngestionForm = ({ onCommit }) => {
     reservations: '',
     eventIntensity: '1',
   });
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setEntryData(prev => ({ ...prev, [name]: value }));
   };
 
+  const isFormValid = [
+    'netSales', 'laborCost', 'laborHours', 'totalCovers', 'reservations', 'eventIntensity'
+  ].every(field => entryData[field] !== '' && !isNaN(parseFloat(entryData[field])));
+
   const handleSubmit = async () => {
+    if (!isFormValid) return;
     const success = await onCommit(entryData);
     if (success) {
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 3000);
       setEntryData({
         date: new Date().toISOString().split('T')[0],
         netSales: '',
@@ -138,8 +153,22 @@ const IngestionForm = ({ onCommit }) => {
           </div>
         </div>
 
-        <button onClick={handleSubmit} className="w-full bg-orange-600 hover:bg-orange-500 text-white font-black py-4 rounded-2xl shadow-xl shadow-orange-600/20 transition-all active:scale-[0.98] text-[10px] uppercase tracking-[0.3em]">
-          Commit Data to Vault
+        {showSuccess && (
+          <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold text-center animate-in fade-in slide-in-from-top-2 uppercase tracking-widest">
+            Intelligence Synced Successfully
+          </div>
+        )}
+
+        <button 
+          onClick={handleSubmit} 
+          disabled={!isFormValid}
+          className={`w-full font-black py-4 rounded-2xl shadow-xl transition-all active:scale-[0.98] text-[10px] uppercase tracking-[0.3em] ${
+            isFormValid 
+              ? 'bg-orange-600 hover:bg-orange-500 text-white shadow-orange-600/20' 
+              : 'bg-slate-200 dark:bg-white/5 text-slate-400 dark:text-slate-600 cursor-not-allowed border border-slate-200 dark:border-white/10'
+          }`}
+        >
+          {isFormValid ? 'Commit Data to Vault' : 'Complete Required Fields'}
         </button>
       </div>
     </div>

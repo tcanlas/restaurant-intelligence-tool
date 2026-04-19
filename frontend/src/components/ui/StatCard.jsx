@@ -1,5 +1,18 @@
 import React from 'react';
 
+/**
+ * StatCard - A reusable glassmorphic tile for displaying operational metrics.
+ * Supports dynamic trends, loading skeletons, and custom iconography.
+ * 
+ * @param {Object} props
+ * @param {string} props.title - The metric label (e.g., "Net Sales").
+ * @param {string|number} props.value - The primary value to display.
+ * @param {React.ReactNode} props.icon - SVG icon component.
+ * @param {string} props.color - Tailwind text color class for the icon (e.g., "text-orange-500").
+ * @param {string} [props.trend] - Optional trend string (e.g., "+12%").
+ * @param {React.ReactNode} [props.subValue] - Optional secondary text or badges.
+ * @param {boolean} [props.loading] - If true, displays an animated pulse skeleton.
+ */
 const StatCard = ({ title, value, icon, color, trend, subValue, loading }) => {
   // Logic to determine trend intent
   const isPositive = typeof trend === 'number' ? trend > 0 : trend?.startsWith('+');
