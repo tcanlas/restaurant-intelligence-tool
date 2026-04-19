@@ -64,7 +64,6 @@ const useVaultData = () => {
           date: data.date,
           totalCovers: data.totalCovers,
           reservations: data.reservations,
-          eventIntensity: data.eventIntensity,
           netSales: data.netSales,
           laborCost: data.laborCost
         }),

@@ -51,8 +51,10 @@ frontend/postcss.config.js
 frontend/SalesOverview.jsx
 frontend/src/AllergenTracker.jsx
 frontend/src/App.jsx
+frontend/src/components/ErrorBoundary.jsx
 frontend/src/components/Navigation.jsx
 frontend/src/components/SalesOverview.jsx
+frontend/src/components/ui/FormInput.jsx
 frontend/src/components/ui/StatCard.jsx
 frontend/src/config/constants.js
 frontend/src/features/Dashboard/PredictiveHeatMap.jsx
@@ -163,6 +165,106 @@ export default {
 export const AllergenTracker = () => {
   return <div>Allergen Tracker Coming Soon</div>;
 };
+</file>
+
+<file path="frontend/src/components/ErrorBoundary.jsx">
+import React from 'react';
+
+/**
+ * ErrorBoundary - Catches rendering errors in child components and displays
+ * a professional "System Interruption" fallback UI.
+ */
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error("Vault Runtime Exception:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen bg-slate-50 dark:bg-[#050505] flex items-center justify-center p-6 font-sans">
+          <div className="max-w-md w-full bg-white dark:bg-white/5 backdrop-blur-2xl p-10 rounded-[3rem] shadow-2xl border border-red-500/20 text-center space-y-6">
+            <div className="w-20 h-20 bg-red-500/10 rounded-3xl flex items-center justify-center mx-auto border border-red-500/20 animate-pulse">
+              <svg className="w-10 h-10 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            
+            <div>
+              <h1 className="text-[10px] font-black text-red-500 uppercase tracking-[0.4em] mb-2">Security Protocol Alpha</h1>
+              <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">System Interruption</h2>
+              <p className="mt-4 text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
+                The Vault's rendering engine encountered a critical exception. Intelligence streams have been paused to protect data integrity.
+              </p>
+            </div>
+
+            <div className="pt-4">
+              <button 
+                onClick={() => window.location.reload()}
+                className="w-full bg-slate-900 dark:bg-white text-white dark:text-black font-black py-4 rounded-2xl shadow-xl transition-all active:scale-95 text-[10px] uppercase tracking-[0.2em]"
+              >
+                Re-Initialize Vault
+              </button>
+              <p className="mt-4 text-[9px] font-bold text-slate-400 dark:text-slate-600 uppercase tracking-widest">
+                Error Reference: {this.state.error?.name || "Runtime_Exception"}
+              </p>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
+export default ErrorBoundary;
+</file>
+
+<file path="frontend/src/components/ui/FormInput.jsx">
+import React from 'react';
+
+/**
+ * FormInput - A styled wrapper for standard form inputs.
+ * 
+ * @param {Object} props
+ * @param {string} props.label - The text displayed above the input.
+ * @param {string} props.name - The name attribute for the input.
+ * @param {string} [props.type="text"] - The HTML input type.
+ * @param {string|number} props.value - The current value.
+ * @param {function} props.onChange - Change handler function.
+ * @param {string} [props.placeholder] - Optional placeholder text.
+ * @param {number} [props.min] - Minimum value (for numeric inputs).
+ * @param {number} [props.max] - Maximum value (for numeric inputs).
+ */
+const FormInput = ({ label, name, type = "text", value, onChange, placeholder, min, max }) => {
+  return (
+    <div className="space-y-1.5">
+      <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">{label}</label>
+      <input
+        type={type}
+        name={name}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        min={min}
+        max={max}
+        className="w-full bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-orange-500/50 transition-all text-slate-900 dark:text-white"
+      />
+    </div>
+  );
+};
+
+export default FormInput;
 </file>
 
 <file path="frontend/src/config/constants.js">
@@ -1292,6 +1394,7 @@ import {
   calculateAverageCheck,
   formatCurrency
 } from '../../utils/analytics';
+import FormInput from '../../components/ui/FormInput';
 
 /**
  * IngestionForm - A dedicated view for manual operational data entry.
@@ -1383,14 +1486,22 @@ const IngestionForm = ({ onCommit }) => {
           {/* Column 1: Financials */}
           <div className="space-y-5">
             <p className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest border-b border-slate-100 dark:border-white/5 pb-1">Financials</p>
-            <div className="space-y-1.5">
-              <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Net Sales ($)</label>
-              <input type="number" name="netSales" value={entryData.netSales} onChange={handleInputChange} placeholder="0.00" className="w-full bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-orange-500/50 transition-all text-slate-900 dark:text-white" />
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Total Covers</label>
-              <input type="number" name="totalCovers" value={entryData.totalCovers} onChange={handleInputChange} placeholder="0" className="w-full bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-orange-500/50 transition-all text-slate-900 dark:text-white" />
-            </div>
+            <FormInput
+              label="Net Sales ($)"
+              name="netSales"
+              type="number"
+              value={entryData.netSales}
+              onChange={handleInputChange}
+              placeholder="0.00"
+            />
+            <FormInput
+              label="Total Covers"
+              name="totalCovers"
+              type="number"
+              value={entryData.totalCovers}
+              onChange={handleInputChange}
+              placeholder="0"
+            />
             <div className="space-y-1.5">
               <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Avg Check (Derived)</label>
               <div className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm text-slate-500 dark:text-slate-400 font-bold">
@@ -1402,28 +1513,45 @@ const IngestionForm = ({ onCommit }) => {
           {/* Column 2: Operations */}
           <div className="space-y-5">
             <p className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest border-b border-slate-100 dark:border-white/5 pb-1">Operations</p>
-            <div className="space-y-1.5">
-              <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Labor Cost ($)</label>
-              <input type="number" name="laborCost" value={entryData.laborCost} onChange={handleInputChange} placeholder="0.00" className="w-full bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-orange-500/50 transition-all text-slate-900 dark:text-white" />
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Labor Hours</label>
-              <input type="number" name="laborHours" value={entryData.laborHours} onChange={handleInputChange} placeholder="0.0" className="w-full bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-orange-500/50 transition-all text-slate-900 dark:text-white" />
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Event Intensity (1-5)</label>
-              <input type="number" name="eventIntensity" min="1" max="5" value={entryData.eventIntensity} onChange={handleInputChange} className="w-full bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-orange-500/50 transition-all text-slate-900 dark:text-white" />
-            </div>
+            <FormInput
+              label="Labor Cost ($)"
+              name="laborCost"
+              type="number"
+              value={entryData.laborCost}
+              onChange={handleInputChange}
+              placeholder="0.00"
+            />
+            <FormInput
+              label="Labor Hours"
+              name="laborHours"
+              type="number"
+              value={entryData.laborHours}
+              onChange={handleInputChange}
+              placeholder="0.0"
+            />
+            <FormInput
+              label="Event Intensity (1-5)"
+              name="eventIntensity"
+              type="number"
+              min={1}
+              max={5}
+              value={entryData.eventIntensity}
+              onChange={handleInputChange}
+            />
           </div>
 
           {/* Span 2: Capacity Volume */}
           <div className="col-span-2 space-y-5">
             <p className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest border-b border-slate-100 dark:border-white/5 pb-1">Capacity Volume</p>
             <div className="grid grid-cols-3 gap-6">
-              <div className="space-y-1.5">
-                <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Reservations</label>
-                <input type="number" name="reservations" value={entryData.reservations} onChange={handleInputChange} placeholder="0" className="w-full bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-orange-500/50 transition-all text-slate-900 dark:text-white" />
-              </div>
+              <FormInput
+                label="Reservations"
+                name="reservations"
+                type="number"
+                value={entryData.reservations}
+                onChange={handleInputChange}
+                placeholder="0"
+              />
               <div className="space-y-1.5">
                 <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Walk-ins</label>
                 <div className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm text-slate-500 dark:text-slate-400 font-bold">
@@ -1669,6 +1797,7 @@ import IngestionForm from './features/Ingestion/IngestionForm';
 import DashboardView from "./features/DashboardView";
 import Navigation from "./components/Navigation";
 import useVaultData from './hooks/useVaultData';
+import ErrorBoundary from './components/ErrorBoundary';
 
 function App() {
   const [isDark, setIsDark] = useState(true);
@@ -1690,6 +1819,7 @@ function App() {
 
   return (
     <div className={isDark ? "dark" : ""}>
+      <ErrorBoundary>
       <div className="min-h-screen bg-slate-50 dark:bg-[#050505] text-slate-900 dark:text-slate-200 p-6 pb-24 font-sans selection:bg-orange-500/30 transition-all duration-700">
         <div className="max-w-md mx-auto space-y-4">
           <Navigation 
@@ -1726,6 +1856,7 @@ function App() {
           </footer>
         </div>
       </div>
+      </ErrorBoundary>
     </div>
   );
 }

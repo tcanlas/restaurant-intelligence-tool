@@ -25,7 +25,6 @@ const IngestionForm = ({ onCommit }) => {
     compsVoids: '',
     totalCovers: '',
     reservations: '',
-    eventIntensity: '1',
   });
   const [showSuccess, setShowSuccess] = useState(false);
 
@@ -35,7 +34,7 @@ const IngestionForm = ({ onCommit }) => {
   };
 
   const isFormValid = [
-    'netSales', 'laborCost', 'laborHours', 'totalCovers', 'reservations', 'eventIntensity'
+    'netSales', 'laborCost', 'laborHours', 'totalCovers', 'reservations'
   ].every(field => entryData[field] !== '' && !isNaN(parseFloat(entryData[field])));
 
   const handleSubmit = async () => {
@@ -52,7 +51,6 @@ const IngestionForm = ({ onCommit }) => {
         compsVoids: '',
         totalCovers: '',
         reservations: '',
-        eventIntensity: '1',
       });
     }
   };
@@ -140,21 +138,18 @@ const IngestionForm = ({ onCommit }) => {
               onChange={handleInputChange}
               placeholder="0.0"
             />
-            <FormInput
-              label="Event Intensity (1-5)"
-              name="eventIntensity"
-              type="number"
-              min={1}
-              max={5}
-              value={entryData.eventIntensity}
-              onChange={handleInputChange}
-            />
+            <div className="space-y-1.5">
+              <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Efficiency (SPLH)</label>
+              <div className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm text-slate-500 dark:text-slate-400 font-bold">
+                {formatCurrency(calculateSPLH(entryData.netSales, entryData.laborHours))}
+              </div>
+            </div>
           </div>
 
           {/* Span 2: Capacity Volume */}
           <div className="col-span-2 space-y-5">
             <p className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest border-b border-slate-100 dark:border-white/5 pb-1">Capacity Volume</p>
-            <div className="grid grid-cols-3 gap-6">
+            <div className="grid grid-cols-2 gap-6">
               <FormInput
                 label="Reservations"
                 name="reservations"
@@ -167,12 +162,6 @@ const IngestionForm = ({ onCommit }) => {
                 <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Walk-ins</label>
                 <div className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm text-slate-500 dark:text-slate-400 font-bold">
                   {calculateWalkins(entryData.totalCovers, entryData.reservations)}
-                </div>
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Efficiency (SPLH)</label>
-                <div className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm text-slate-500 dark:text-slate-400 font-bold">
-                  {formatCurrency(calculateSPLH(entryData.netSales, entryData.laborHours))}
                 </div>
               </div>
             </div>
