@@ -5,6 +5,7 @@ import {
   calculateAverageCheck,
   formatCurrency
 } from '../../utils/analytics';
+import FormInput from '../../components/ui/FormInput';
 
 /**
  * IngestionForm - A dedicated view for manual operational data entry.
@@ -96,14 +97,22 @@ const IngestionForm = ({ onCommit }) => {
           {/* Column 1: Financials */}
           <div className="space-y-5">
             <p className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest border-b border-slate-100 dark:border-white/5 pb-1">Financials</p>
-            <div className="space-y-1.5">
-              <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Net Sales ($)</label>
-              <input type="number" name="netSales" value={entryData.netSales} onChange={handleInputChange} placeholder="0.00" className="w-full bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-orange-500/50 transition-all text-slate-900 dark:text-white" />
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Total Covers</label>
-              <input type="number" name="totalCovers" value={entryData.totalCovers} onChange={handleInputChange} placeholder="0" className="w-full bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-orange-500/50 transition-all text-slate-900 dark:text-white" />
-            </div>
+            <FormInput
+              label="Net Sales ($)"
+              name="netSales"
+              type="number"
+              value={entryData.netSales}
+              onChange={handleInputChange}
+              placeholder="0.00"
+            />
+            <FormInput
+              label="Total Covers"
+              name="totalCovers"
+              type="number"
+              value={entryData.totalCovers}
+              onChange={handleInputChange}
+              placeholder="0"
+            />
             <div className="space-y-1.5">
               <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Avg Check (Derived)</label>
               <div className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm text-slate-500 dark:text-slate-400 font-bold">
@@ -115,28 +124,45 @@ const IngestionForm = ({ onCommit }) => {
           {/* Column 2: Operations */}
           <div className="space-y-5">
             <p className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest border-b border-slate-100 dark:border-white/5 pb-1">Operations</p>
-            <div className="space-y-1.5">
-              <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Labor Cost ($)</label>
-              <input type="number" name="laborCost" value={entryData.laborCost} onChange={handleInputChange} placeholder="0.00" className="w-full bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-orange-500/50 transition-all text-slate-900 dark:text-white" />
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Labor Hours</label>
-              <input type="number" name="laborHours" value={entryData.laborHours} onChange={handleInputChange} placeholder="0.0" className="w-full bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-orange-500/50 transition-all text-slate-900 dark:text-white" />
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Event Intensity (1-5)</label>
-              <input type="number" name="eventIntensity" min="1" max="5" value={entryData.eventIntensity} onChange={handleInputChange} className="w-full bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-orange-500/50 transition-all text-slate-900 dark:text-white" />
-            </div>
+            <FormInput
+              label="Labor Cost ($)"
+              name="laborCost"
+              type="number"
+              value={entryData.laborCost}
+              onChange={handleInputChange}
+              placeholder="0.00"
+            />
+            <FormInput
+              label="Labor Hours"
+              name="laborHours"
+              type="number"
+              value={entryData.laborHours}
+              onChange={handleInputChange}
+              placeholder="0.0"
+            />
+            <FormInput
+              label="Event Intensity (1-5)"
+              name="eventIntensity"
+              type="number"
+              min={1}
+              max={5}
+              value={entryData.eventIntensity}
+              onChange={handleInputChange}
+            />
           </div>
 
           {/* Span 2: Capacity Volume */}
           <div className="col-span-2 space-y-5">
             <p className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest border-b border-slate-100 dark:border-white/5 pb-1">Capacity Volume</p>
             <div className="grid grid-cols-3 gap-6">
-              <div className="space-y-1.5">
-                <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Reservations</label>
-                <input type="number" name="reservations" value={entryData.reservations} onChange={handleInputChange} placeholder="0" className="w-full bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-orange-500/50 transition-all text-slate-900 dark:text-white" />
-              </div>
+              <FormInput
+                label="Reservations"
+                name="reservations"
+                type="number"
+                value={entryData.reservations}
+                onChange={handleInputChange}
+                placeholder="0"
+              />
               <div className="space-y-1.5">
                 <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Walk-ins</label>
                 <div className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm text-slate-500 dark:text-slate-400 font-bold">
