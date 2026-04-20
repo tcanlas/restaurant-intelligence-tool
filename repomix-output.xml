@@ -760,101 +760,6 @@ dist
 repomix-output.xml
 </file>
 
-<file path="frontend/src/hooks/useVaultData.js">
-import { useState, useEffect, useCallback } from 'react';
-import summaryData from '../summaryData.json';
-import salesTrendData from '../salesTrendData.json';
-import { calculateLaborPercentage } from '../utils/analytics';
-
-const useVaultData = () => {
-  const [status, setStatus] = useState('Connecting...');
-  const [summary, setSummary] = useState(summaryData);
-  const [loading, setLoading] = useState(false);
-  
-  // Initialize with local JSON data and calculate labor percentage immediately
-  const [chartData, setChartData] = useState(salesTrendData.map(d => ({
-    ...d,
-    labor_pct: calculateLaborPercentage(d.labor_cost, d.net_sales)
-  })));
-
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-    try {
-      // Check backend health
-      const healthRes = await fetch('/api/health');
-      const healthData = await healthRes.json();
-      setStatus(healthData.message);
-
-      // Fetch summary
-      const summaryRes = await fetch('/api/sales-summary');
-      if (!summaryRes.ok) throw new Error('Data file missing');
-      const summaryJson = await summaryRes.json();
-      setSummary(summaryJson);
-
-      // Fetch raw sales for the chart
-      const salesRes = await fetch('/api/sales');
-      const salesJson = await salesRes.json();
-      if (salesJson && salesJson.length > 0) {
-        const processedData = salesJson.map(d => ({
-          ...d,
-          labor_pct: calculateLaborPercentage(d.labor_cost, d.net_sales)
-        }));
-        setChartData(processedData);
-      }
-      
-      setStatus('Connected & Synced');
-    } catch (err) {
-      console.error('Error fetching data:', err);
-      setStatus('Sync Error');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  // Trigger initial synchronization on mount
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
-  const handleCommit = async (data) => {
-    try {
-      const response = await fetch('/api/vault', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          date: data.date,
-          totalCovers: data.totalCovers,
-          reservations: data.reservations,
-          eventIntensity: data.eventIntensity,
-          netSales: data.netSales,
-          laborCost: data.laborCost
-        }),
-      });
-
-      if (response.ok) {
-        alert(`Operational data for ${data.date} committed successfully.`);
-        fetchData();
-        return true;
-      } else {
-        const err = await response.json();
-        alert(`Vault Error: ${err.error || 'Failed to save entry.'}`);
-        return false;
-      }
-    } catch (err) {
-      console.error('Commit Failure:', err);
-      alert('Network Error: Vault is unreachable.');
-      return false;
-    }
-  };
-
-  return { summary, chartData, loading, status, fetchData, handleCommit };
-};
-
-export default useVaultData;
-</file>
-
 <file path="frontend/tailwind.config.js">
 /** @type {import('tailwindcss').Config} */
 export default {
@@ -1264,6 +1169,101 @@ const PredictiveHeatMap = ({ history = [], currentConditions = {} }) => {
 export default PredictiveHeatMap;
 </file>
 
+<file path="frontend/src/hooks/useVaultData.js">
+import { useState, useEffect, useCallback } from 'react';
+import summaryData from '../summaryData.json';
+import salesTrendData from '../salesTrendData.json';
+import { calculateLaborPercentage } from '../utils/analytics';
+
+const useVaultData = () => {
+  const [status, setStatus] = useState('Connecting...');
+  const [summary, setSummary] = useState(summaryData);
+  const [loading, setLoading] = useState(false);
+  
+  // Helper to process sales data with analytics
+  const processSalesData = useCallback((data) => {
+    return data.map(d => ({
+      ...d,
+      labor_pct: calculateLaborPercentage(d.labor_cost, d.net_sales)
+    }));
+  }, []);
+
+  // Initialize with local JSON data and calculate labor percentage immediately
+  const [chartData, setChartData] = useState(() => processSalesData(salesTrendData));
+
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    try {
+      // Check backend health
+      const healthRes = await fetch('/api/health');
+      const healthData = await healthRes.json();
+      setStatus(healthData.message);
+
+      // Fetch summary
+      const summaryRes = await fetch('/api/sales-summary');
+      if (!summaryRes.ok) throw new Error('Data file missing');
+      const summaryJson = await summaryRes.json();
+      setSummary(summaryJson);
+
+      // Fetch raw sales for the chart
+      const salesRes = await fetch('/api/sales');
+      const salesJson = await salesRes.json();
+      if (salesJson && salesJson.length > 0) {
+        setChartData(processSalesData(salesJson));
+      }
+      
+      setStatus('Connected & Synced');
+    } catch (err) {
+      console.error('Error fetching data:', err);
+      setStatus('Sync Error');
+    } finally {
+      setLoading(false);
+    }
+  }, [processSalesData]);
+
+  // Trigger initial synchronization on mount
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  const handleCommit = async (data) => {
+    try {
+      const response = await fetch('/api/vault', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          date: data.date,
+          totalCovers: data.totalCovers,
+          reservations: data.reservations,
+          netSales: data.netSales,
+          laborCost: data.laborCost
+        }),
+      });
+
+      if (response.ok) {
+        alert(`Operational data for ${data.date} committed successfully.`);
+        fetchData();
+        return true;
+      } else {
+        const err = await response.json();
+        alert(`Vault Error: ${err.error || 'Failed to save entry.'}`);
+        return false;
+      }
+    } catch (err) {
+      console.error('Commit Failure:', err);
+      alert('Network Error: Vault is unreachable.');
+      return false;
+    }
+  };
+
+  return { summary, chartData, loading, status, fetchData, handleCommit };
+};
+
+export default useVaultData;
+</file>
+
 <file path="frontend/src/components/SalesOverview.jsx">
 import React from 'react';
 
@@ -1414,7 +1414,6 @@ const IngestionForm = ({ onCommit }) => {
     compsVoids: '',
     totalCovers: '',
     reservations: '',
-    eventIntensity: '1',
   });
   const [showSuccess, setShowSuccess] = useState(false);
 
@@ -1424,7 +1423,7 @@ const IngestionForm = ({ onCommit }) => {
   };
 
   const isFormValid = [
-    'netSales', 'laborCost', 'laborHours', 'totalCovers', 'reservations', 'eventIntensity'
+    'netSales', 'laborCost', 'laborHours', 'totalCovers', 'reservations'
   ].every(field => entryData[field] !== '' && !isNaN(parseFloat(entryData[field])));
 
   const handleSubmit = async () => {
@@ -1441,7 +1440,6 @@ const IngestionForm = ({ onCommit }) => {
         compsVoids: '',
         totalCovers: '',
         reservations: '',
-        eventIntensity: '1',
       });
     }
   };
@@ -1529,21 +1527,18 @@ const IngestionForm = ({ onCommit }) => {
               onChange={handleInputChange}
               placeholder="0.0"
             />
-            <FormInput
-              label="Event Intensity (1-5)"
-              name="eventIntensity"
-              type="number"
-              min={1}
-              max={5}
-              value={entryData.eventIntensity}
-              onChange={handleInputChange}
-            />
+            <div className="space-y-1.5">
+              <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Efficiency (SPLH)</label>
+              <div className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm text-slate-500 dark:text-slate-400 font-bold">
+                {formatCurrency(calculateSPLH(entryData.netSales, entryData.laborHours))}
+              </div>
+            </div>
           </div>
 
           {/* Span 2: Capacity Volume */}
           <div className="col-span-2 space-y-5">
             <p className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest border-b border-slate-100 dark:border-white/5 pb-1">Capacity Volume</p>
-            <div className="grid grid-cols-3 gap-6">
+            <div className="grid grid-cols-2 gap-6">
               <FormInput
                 label="Reservations"
                 name="reservations"
@@ -1556,12 +1551,6 @@ const IngestionForm = ({ onCommit }) => {
                 <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Walk-ins</label>
                 <div className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm text-slate-500 dark:text-slate-400 font-bold">
                   {calculateWalkins(entryData.totalCovers, entryData.reservations)}
-                </div>
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Efficiency (SPLH)</label>
-                <div className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-sm text-slate-500 dark:text-slate-400 font-bold">
-                  {formatCurrency(calculateSPLH(entryData.netSales, entryData.laborHours))}
                 </div>
               </div>
             </div>
@@ -1868,6 +1857,53 @@ export default App;
 
 <git_diffs>
 <git_diff_work_tree>
+diff --git a/frontend/src/hooks/useVaultData.js b/frontend/src/hooks/useVaultData.js
+index 401a5ca..3c114b6 100644
+--- a/frontend/src/hooks/useVaultData.js
++++ b/frontend/src/hooks/useVaultData.js
+@@ -8,11 +8,16 @@ const useVaultData = () => {
+   const [summary, setSummary] = useState(summaryData);
+   const [loading, setLoading] = useState(false);
+   
++  // Helper to process sales data with analytics
++  const processSalesData = useCallback((data) => {
++    return data.map(d => ({
++      ...d,
++      labor_pct: calculateLaborPercentage(d.labor_cost, d.net_sales)
++    }));
++  }, []);
++
+   // Initialize with local JSON data and calculate labor percentage immediately
+-  const [chartData, setChartData] = useState(salesTrendData.map(d => ({
+-    ...d,
+-    labor_pct: calculateLaborPercentage(d.labor_cost, d.net_sales)
+-  })));
++  const [chartData, setChartData] = useState(() => processSalesData(salesTrendData));
+ 
+   const fetchData = useCallback(async () => {
+     setLoading(true);
+@@ -32,11 +37,7 @@ const useVaultData = () => {
+       const salesRes = await fetch('/api/sales');
+       const salesJson = await salesRes.json();
+       if (salesJson && salesJson.length > 0) {
+-        const processedData = salesJson.map(d => ({
+-          ...d,
+-          labor_pct: calculateLaborPercentage(d.labor_cost, d.net_sales)
+-        }));
+-        setChartData(processedData);
++        setChartData(processSalesData(salesJson));
+       }
+       
+       setStatus('Connected & Synced');
+@@ -46,7 +47,7 @@ const useVaultData = () => {
+     } finally {
+       setLoading(false);
+     }
+-  }, []);
++  }, [processSalesData]);
+ 
+   // Trigger initial synchronization on mount
+   useEffect(() => {
 
 </git_diff_work_tree>
 <git_diff_staged>

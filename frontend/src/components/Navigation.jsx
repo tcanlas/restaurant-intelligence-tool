@@ -4,13 +4,11 @@ const Navigation = ({ activeTab, setActiveTab, isDark, setIsDark, onRefresh, loa
   return (
     <nav className="space-y-4">
       {/* Top Header Bar */}
-      <header className="py-6 px-4 flex justify-between items-center bg-white/50 dark:bg-transparent rounded-[2rem] border border-slate-100 dark:border-none">
+      <header className="py-6 pl-0 pr-4 flex justify-between items-center bg-white/50 dark:bg-transparent rounded-[2rem] border border-slate-100 dark:border-none">
         <div>
           <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tighter italic">THE VAULT</h1>
           <div className="flex items-center space-x-2">
             <p className="text-orange-500/80 text-[10px] font-bold uppercase tracking-[0.3em]">Operational Intelligence</p>
-            <span className="h-1 w-1 rounded-full bg-slate-300 dark:bg-slate-700" />
-            <button className="text-[10px] font-bold text-slate-400 hover:text-orange-500 transition-colors uppercase tracking-widest">Support</button>
           </div>
         </div>
         

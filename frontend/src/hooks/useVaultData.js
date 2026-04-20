@@ -8,11 +8,16 @@ const useVaultData = () => {
   const [summary, setSummary] = useState(summaryData);
   const [loading, setLoading] = useState(false);
   
+  // Helper to process sales data with analytics
+  const processSalesData = useCallback((data) => {
+    return data.map(d => ({
+      ...d,
+      labor_pct: calculateLaborPercentage(d.labor_cost, d.net_sales)
+    }));
+  }, []);
+
   // Initialize with local JSON data and calculate labor percentage immediately
-  const [chartData, setChartData] = useState(salesTrendData.map(d => ({
-    ...d,
-    labor_pct: calculateLaborPercentage(d.labor_cost, d.net_sales)
-  })));
+  const [chartData, setChartData] = useState(() => processSalesData(salesTrendData));
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -32,11 +37,7 @@ const useVaultData = () => {
       const salesRes = await fetch('/api/sales');
       const salesJson = await salesRes.json();
       if (salesJson && salesJson.length > 0) {
-        const processedData = salesJson.map(d => ({
-          ...d,
-          labor_pct: calculateLaborPercentage(d.labor_cost, d.net_sales)
-        }));
-        setChartData(processedData);
+        setChartData(processSalesData(salesJson));
       }
       
       setStatus('Connected & Synced');
@@ -46,7 +47,7 @@ const useVaultData = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [processSalesData]);
 
   // Trigger initial synchronization on mount
   useEffect(() => {

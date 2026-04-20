@@ -54,11 +54,16 @@ function App() {
 
           {/* Bottom Status Bar */}
           <footer className="mt-12 pt-8 border-t border-slate-200 dark:border-white/5">
-            <div className="flex items-center space-x-2">
-              <div className={`w-2 h-2 rounded-full ${status?.toLowerCase().includes('connected') ? 'bg-green-500' : 'bg-amber-500'}`}></div>
-              <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.4em]">
-                System Status: {status}
-              </span>
+            <div className="space-y-3">
+              <div className="flex items-center space-x-2">
+                <div className={`w-2 h-2 rounded-full ${status?.toLowerCase().includes('connected') ? 'bg-green-500' : 'bg-amber-500'}`}></div>
+                <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.4em]">
+                  System Status: {status}
+                </span>
+              </div>
+              <button className="text-[10px] font-bold text-slate-400 hover:text-orange-500 transition-colors uppercase tracking-widest">
+                Support
+              </button>
             </div>
           </footer>
         </div>
